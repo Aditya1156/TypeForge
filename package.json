@@ -1,8 +1,29 @@
 {
-  "name": "typeforge:-modern-typing-master",
-  "private": true,
-  "version": "0.0.0",
+  "name": "typeforge-modern-typing-master",
+  "version": "2.0.0",
+  "description": "A sophisticated, AI-powered typing practice application with analytics dashboard and personalized coaching",
+  "private": false,
   "type": "module",
+  "keywords": [
+    "typing",
+    "practice", 
+    "ai",
+    "analytics",
+    "education",
+    "react",
+    "typescript",
+    "vite"
+  ],
+  "author": "Aditya1156",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aditya1156/TypeForge.git"
+  },
+  "homepage": "https://github.com/Aditya1156/TypeForge#readme",
+  "bugs": {
+    "url": "https://github.com/Aditya1156/TypeForge/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
