@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import LandingPage from './components/landing/LandingPage';
 import TypingApp from './TypingApp';
 import SignIn from './components/auth/SignIn';
@@ -8,6 +8,7 @@ import Settings from './components/Settings';
 import ToastContainer from './components/ToastContainer';
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
+import { TimerProvider } from './context/TimerContext';
 import type { ModalType } from './types';
 
 const App = () => {
@@ -53,7 +54,7 @@ const App = () => {
   };
 
   return (
-    <>
+    <TimerProvider>
       <ToastContainer />
       {view === 'landing' ? (
         <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} />
@@ -64,7 +65,7 @@ const App = () => {
         />
       )}
       {renderModal()}
-    </>
+    </TimerProvider>
   );
 };
 

@@ -3,6 +3,7 @@ import useEngine from './hooks/useEngine';
 import useProgress from './hooks/useProgress';
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
+import { useTimer } from './context/TimerContext';
 import { fetchAiAnalysis, fetchAiCustomDrill } from './services/geminiService';
 import TypingTest from './components/TypingTest';
 import Results from './components/Results';
@@ -24,6 +25,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
   const { isSoundEnabled, caretStyle } = useSettings();
+  const { startSession, endSession, isSessionActive } = useTimer();
   const { state, words, typed, errors, errorDetails, wpm, accuracy, totalTyped, loadTest, restart, fingersToUse, liveWpm, consistency } = useEngine(view === 'test', isSoundEnabled);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [currentDrillIndex, setCurrentDrillIndex] = useState<number>(0);
@@ -67,6 +69,20 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
 
   const isFinished = state === 'finish';
   const isTyping = state === 'run';
+
+  // Start timer when typing begins
+  useEffect(() => {
+    if (isTyping && !isSessionActive) {
+      startSession();
+    }
+  }, [isTyping, isSessionActive, startSession]);
+
+  // End timer when test finishes
+  useEffect(() => {
+    if (isFinished && isSessionActive) {
+      endSession();
+    }
+  }, [isFinished, isSessionActive, endSession]);
 
   useEffect(() => {
     if (isFinished && currentLesson && currentLesson.type !== 'guide' && currentLesson.id !== 'random' && currentLesson.id !== 'ai-drill') {

@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext';
 import DashboardTabs from './DashboardTabs';
 import LoadingSpinner from '../LoadingSpinner';
+import TimerWidget from '../TimerWidget';
 import type { Progress, Lesson } from '../../types';
 
 interface DashboardProps {
@@ -42,6 +43,9 @@ const Dashboard = ({ progress, isProgressLoaded, onSelectDrill }: DashboardProps
                  <h1 className="text-4xl font-bold text-text-primary">Your Dashboard</h1>
                  <p className="text-text-secondary mt-1">An overview of your typing journey.</p>
             </header>
+            
+            {/* Timer Widget in main dashboard */}
+            <TimerWidget showGoalSetting={true} />
             
             <DashboardTabs progress={progress} onSelectDrill={onSelectDrill} />
         </div>

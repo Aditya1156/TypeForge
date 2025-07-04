@@ -32,6 +32,15 @@ A sophisticated, AI-powered typing practice application built with React, TypeSc
 - **Problem Area Analysis**: Identify and focus on challenging key combinations
 - **Streak Tracking**: Monitor daily practice consistency
 
+### ⏱️ Smart Timer System
+- **Automatic Session Tracking**: Starts timing when you begin typing, stops when finished
+- **Daily Practice Goals**: Set and track daily time targets (customizable from 5 minutes to 8 hours)
+- **Progress Visualization**: Color-coded progress bars and percentage indicators
+- **Streak Counter**: Track consecutive days of practice for motivation
+- **Multi-view Display**: Compact sidebar widget and full dashboard interface
+- **Cloud Sync**: Firebase integration for cross-device synchronization
+- **Real-time Statistics**: Live session time, daily totals, and goal progress
+
 ### 🎨 Customization & Themes
 - **6 Beautiful Themes**: 
   - 🌙 Classic Dark
@@ -56,6 +65,7 @@ A sophisticated, AI-powered typing practice application built with React, TypeSc
 - **Keyboard Navigation**: Full support for keyboard-only usage
 - **Performance Optimized**: Smooth 60fps typing experience
 - **Error Recovery**: Robust error handling and state management
+- **Smart Timer Integration**: Automatic session tracking with Firebase cloud sync
 
 ## 🚀 Getting Started
 
@@ -137,7 +147,15 @@ TypeForge/
 1. Navigate to the Dashboard from the sidebar
 2. Explore different tabs: Overview, Analytics, History
 3. Track your progress and identify improvement areas
-4. Set goals and monitor achievements
+4. Set daily practice time goals and monitor achievement
+5. View timer statistics and maintain practice streaks
+
+### Timer & Goal Setting
+1. Set your daily practice goal in the dashboard timer widget
+2. Timer automatically starts when you begin typing
+3. Monitor progress in the compact sidebar widget
+4. Track streaks and celebrate goal achievements
+5. View detailed time statistics across days, weeks, and months
 
 ### Customization
 1. Open Settings from the sidebar
@@ -154,6 +172,7 @@ TypeForge/
 - **State Management**: React Context and custom hooks
 - **Authentication**: Firebase Auth (optional)
 - **Storage**: Local Storage with optional cloud sync
+- **Timer Tracking**: Firebase Firestore for practice time analytics
 - **Charts**: Custom chart components for analytics
 - **Icons**: Lucide React icons
 

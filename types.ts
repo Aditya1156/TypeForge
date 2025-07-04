@@ -1,4 +1,3 @@
-
 export type State = "start" | "run" | "finish";
 
 export interface ErrorDetail {
@@ -76,4 +75,37 @@ export interface SettingsContextType {
     toggleSound: () => void;
     caretStyle: CaretStyle;
     setCaretStyle: (style: CaretStyle) => void;
+}
+
+// Timer related types
+export interface TimerStats {
+  dailyTimeSpent: number; // in seconds
+  weeklyTimeSpent: number; // in seconds
+  monthlyTimeSpent: number; // in seconds
+  totalTimeSpent: number; // in seconds
+  currentSessionTime: number; // in seconds
+  dailyGoal: number; // in seconds (default 30 minutes)
+  sessionLimit: number; // in seconds (default 2 hours)
+  dailyLimit: number; // in seconds (default 8 hours)
+  streak: number; // days
+  lastActiveDate: string; // YYYY-MM-DD format
+}
+
+export interface TimerContextType {
+  timerStats: TimerStats;
+  isSessionActive: boolean;
+  startSession: () => void;
+  endSession: () => void;
+  pauseSession: () => void;
+  resumeSession: () => void;
+  setDailyGoal: (seconds: number) => void;
+  setSessionLimit: (seconds: number) => void;
+  setDailyLimit: (seconds: number) => void;
+  formatTime: (seconds: number) => string;
+  getTimeUntilGoal: () => number;
+  isGoalReached: () => boolean;
+  isSessionLimitReached: () => boolean;
+  isDailyLimitReached: () => boolean;
+  getTimeUntilSessionLimit: () => number;
+  getTimeUntilDailyLimit: () => number;
 }
