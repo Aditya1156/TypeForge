@@ -74,7 +74,11 @@ const useEngine = (isEnabled: boolean, isSoundEnabled: boolean) => {
     }
 
     if (isKeyboardCode(code)) {
+      // More aggressive event prevention for better cross-browser compatibility
       event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      
       if (state === 'start') {
         setState('run');
         setStartTime(Date.now());

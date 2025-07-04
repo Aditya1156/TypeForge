@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import useEngine from './hooks/useEngine';
 import useProgress from './hooks/useProgress';
 import { useAuth } from './context/AuthContext';
@@ -26,6 +26,34 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
   const { state, words, typed, errors, errorDetails, wpm, accuracy, totalTyped, loadTest, restart, fingersToUse, liveWpm, consistency } = useEngine(view === 'test', isSoundEnabled);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [currentDrillIndex, setCurrentDrillIndex] = useState<number>(0);
+  
+  // Scroll position state to preserve position when navigating back
+  const [scrollPositions, setScrollPositions] = useState<{[key: string]: number}>({});
+
+  // Save current scroll position
+  const saveScrollPosition = (viewName: string) => {
+    const scrollY = window.scrollY;
+    setScrollPositions(prev => ({
+      ...prev,
+      [viewName]: scrollY
+    }));
+  };
+
+  // Restore scroll position for a view
+  const restoreScrollPosition = (viewName: string) => {
+    const savedPosition = scrollPositions[viewName];
+    if (savedPosition !== undefined) {
+      // Use requestAnimationFrame to ensure DOM is updated before scrolling
+      requestAnimationFrame(() => {
+        window.scrollTo(0, savedPosition);
+      });
+    }
+  };
+
+  // Restore scroll position when view changes
+  useEffect(() => {
+    restoreScrollPosition(view);
+  }, [view, scrollPositions]);
 
   const { progress, saveDrillPerformance, resetProgress, isLoaded: isProgressLoaded } = useProgress(user);
 
@@ -75,16 +103,23 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     setAiDrillError(null);
   };
 
+  const handleBackFromAi = useCallback(() => {
+    setAiAnalysis(null);
+    setAiError(null);
+  }, []);
+
   const handleRestart = useCallback(() => {
     restart();
     resetAiState();
   }, [restart]);
 
   const handleNavigate = (newView: 'lessons' | 'guide' | 'dashboard') => {
+    saveScrollPosition(view);
     setView(newView);
   };
 
   const handleSelectLesson = useCallback((lesson: Lesson) => {
+    saveScrollPosition(view);
     resetAiState();
     setCurrentLesson(lesson);
     if (lesson.type === 'guide') {
@@ -95,15 +130,16 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     setCurrentDrillIndex(0);
     loadTest(lesson.texts[0]);
     setView('test');
-  }, [loadTest]);
+  }, [loadTest, view, saveScrollPosition]);
 
   const handleSelectDrill = useCallback((lesson: Lesson, drillIndex: number) => {
+    saveScrollPosition(view);
     resetAiState();
     setCurrentLesson(lesson);
     setCurrentDrillIndex(drillIndex);
     loadTest(lesson.texts[drillIndex]);
     setView('test');
-  }, [loadTest]);
+  }, [loadTest, view, saveScrollPosition]);
   
   const handleStartFirstLesson = useCallback(() => {
     const firstRealLesson = chapters.find(c => c.id !== 'chapter-0')?.lessons[0];
@@ -113,18 +149,45 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
   }, [handleSelectLesson]);
 
   const handleSelectRandom = useCallback(() => {
+    saveScrollPosition(view);
     loadTest(); 
     setCurrentLesson({ id: 'random', name: "Random Word Challenge", texts: [] });
     setCurrentDrillIndex(0);
     setView('test');
     resetAiState();
-  }, [loadTest]);
+  }, [loadTest, view, saveScrollPosition]);
 
   const handleBackToMenu = useCallback(() => {
+    saveScrollPosition(view);
     setView('lessons');
     setCurrentLesson(null);
     resetAiState();
-  }, []);
+  }, [view, saveScrollPosition]);
+
+  // ESC key handler for quick navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      // Don't interfere with typing test input or other form elements
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      // Only handle ESC key, let other keys pass through to useEngine
+      if (event.key === 'Escape') {
+        if (view === 'test' || view === 'dashboard') {
+          handleBackToMenu();
+        } else if (view === 'guide') {
+          handleBackToMenu();
+        } else if (view === 'lessons') {
+          onGoToLanding();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [view, handleBackToMenu, onGoToLanding]);
 
   const hasNextDrill = useMemo(() => {
     if (!currentLesson || currentLesson.id === 'random' || currentLesson.id === 'ai-drill' || currentLesson.type === 'guide') {
@@ -182,6 +245,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
 
 
   const handleGenerateAiDrill = useCallback(async (keys: string, practiceMode: PracticeMode) => {
+    saveScrollPosition(view);
     setIsAiDrillLoading(true);
     setAiDrillError(null);
     try {
@@ -195,7 +259,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     } finally {
       setIsAiDrillLoading(false);
     }
-  }, [loadTest]);
+  }, [loadTest, view, saveScrollPosition]);
 
   const handleCloseSidebar = useCallback(() => {
     setIsSidebarOpen(false);
@@ -220,16 +284,67 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
             progress={progress}
             isProgressLoaded={isProgressLoaded}
             onResetProgress={resetProgress}
+            onBackToHome={onGoToLanding}
           />
         );
       case 'guide':
         return <KeyboardGuide onStartFirstLesson={handleStartFirstLesson} onBackToMenu={handleBackToMenu} />;
       case 'dashboard':
-        return <Dashboard progress={progress} isProgressLoaded={isProgressLoaded} onSelectDrill={handleSelectDrill} />;
+        return (
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-6">
+              <button 
+                onClick={handleBackToMenu}
+                className="ml-16 p-2 text-text-secondary hover:text-accent transition-colors flex items-center gap-2"
+                title="Back to lessons"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 19-7-7 7-7"/>
+                  <path d="M19 12H5"/>
+                </svg>
+                Back to Lessons
+              </button>
+              <nav className="text-sm text-text-secondary">
+                <span>Home</span>
+                <span className="mx-2">→</span>
+                <span>Lessons</span>
+                <span className="mx-2">→</span>
+                <span className="text-accent">Dashboard</span>
+              </nav>
+            </div>
+            <Dashboard progress={progress} isProgressLoaded={isProgressLoaded} onSelectDrill={handleSelectDrill} />
+          </div>
+        );
       case 'test':
         return (
           <div className="flex flex-col items-center justify-center flex-grow w-full">
             <header className="relative w-full max-w-5xl text-center mb-4">
+              {/* Back button */}
+              <button 
+                onClick={handleBackToMenu}
+                className="absolute left-16 top-0 p-2 text-text-secondary hover:text-accent transition-colors flex items-center gap-2"
+                title="Back to lessons"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 19-7-7 7-7"/>
+                  <path d="M19 12H5"/>
+                </svg>
+                Back
+              </button>
+              
+              {/* Breadcrumb navigation */}
+              <nav className="absolute right-0 top-0 text-xs text-text-secondary mt-2 hidden sm:block">
+                <span>Home</span>
+                <span className="mx-1">→</span>
+                <span>Lessons</span>
+                <span className="mx-1">→</span>
+                <span className="text-accent">
+                  {currentLesson?.id === 'random' ? 'Random Test' : 
+                   currentLesson?.id === 'ai-drill' ? 'AI Drill' : 
+                   currentLesson?.name || 'Test'}
+                </span>
+              </nav>
+              
               <h1 className="text-xl sm:text-2xl font-bold text-text-primary">
                 {currentLesson?.name}
               </h1>
@@ -275,11 +390,11 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
 
               {isAiLoading && <LoadingSpinner />}
               {aiError && <p className="text-danger bg-danger/10 p-3 rounded-md">{aiError}</p>}
-              {aiAnalysis && <AiCoachFeedback aiAnalysis={aiAnalysis} />}
+              {aiAnalysis && <AiCoachFeedback aiAnalysis={aiAnalysis} onBack={handleBackFromAi} />}
             </main>
 
-            <footer className="text-center text-text-secondary mt-12 text-sm">
-              <p>Press <kbd className="font-sans px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Tab</kbd> to restart the test after completion.</p>
+            <footer className="text-center text-text-secondary mt-16 text-sm">
+              <p>Press <kbd className="font-sans px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Tab</kbd> to restart the test or <kbd className="font-sans px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Esc</kbd> to go back to lessons at any time.</p>
             </footer>
           </div>
         );

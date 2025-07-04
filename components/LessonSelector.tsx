@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
 import type { Chapter, Lesson, PracticeMode, Progress } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import ProgressTick from './ProgressTick';
@@ -16,15 +16,16 @@ interface LessonSelectorProps {
   progress: Progress;
   isProgressLoaded: boolean;
   onResetProgress: () => void;
+  onBackToHome?: () => void;
 }
 
-const LessonSelector = ({ chapters, onSelectLesson, onSelectDrill, onSelectRandom, onGenerateAiDrill, isAiDrillLoading, aiDrillError, progress, isProgressLoaded, onResetProgress }: LessonSelectorProps) => {
+const LessonSelector = ({ chapters, onSelectLesson, onSelectDrill, onSelectRandom, onGenerateAiDrill, isAiDrillLoading, aiDrillError, progress, isProgressLoaded, onResetProgress, onBackToHome }: LessonSelectorProps) => {
   const [difficultKeys, setDifficultKeys] = useState('');
   const [practiceMode, setPracticeMode] = useState<PracticeMode>('words');
   const [expandedLessonId, setExpandedLessonId] = useState<string | null>(null);
 
   const toggleLesson = (lessonId: string) => {
-    setExpandedLessonId(prev => (prev === lessonId ? null : lessonId));
+    setExpandedLessonId((prev: string | null) => (prev === lessonId ? null : lessonId));
   };
 
   const handleGenerateClick = () => {
@@ -44,7 +45,26 @@ const LessonSelector = ({ chapters, onSelectLesson, onSelectDrill, onSelectRando
 
   return (
     <div className="min-h-screen flex flex-col items-center text-text-primary p-4 sm:p-6 lg:p-8">
+      {onBackToHome && (
+        <div className="w-full max-w-4xl mb-4">
+          <button
+            onClick={onBackToHome}
+            className="flex items-center gap-2 px-4 py-2 ml-16 text-sm text-text-secondary hover:text-accent transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m12 19-7-7 7-7"/>
+              <path d="M19 12H5"/>
+            </svg>
+            Back to Home
+          </button>
+        </div>
+      )}
       <header className="text-center mb-10">
+        <nav className="text-sm text-text-secondary mb-4">
+          <span>Home</span>
+          <span className="mx-2">→</span>
+          <span className="text-accent">Lessons</span>
+        </nav>
         <h1 className="text-4xl sm:text-5xl font-bold text-text-primary">
           Type<span className="text-accent">Forge</span>
         </h1>
@@ -67,7 +87,7 @@ const LessonSelector = ({ chapters, onSelectLesson, onSelectDrill, onSelectRando
                 id="difficult-keys"
                 type="text"
                 value={difficultKeys}
-                onChange={(e) => setDifficultKeys(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setDifficultKeys(e.target.value)}
                 placeholder="e.g., q z p ;"
                 className="w-full px-4 py-2 bg-tertiary border border-border-primary rounded-md text-text-primary focus:ring-2 focus:ring-accent focus:outline-none"
               />
@@ -173,7 +193,7 @@ const LessonSelector = ({ chapters, onSelectLesson, onSelectDrill, onSelectRando
                       {expandedLessonId === lesson.id && (
                         <div className="p-4 border-t border-border-primary/50 bg-primary/20">
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            {lesson.texts.map((drill, index) => {
+                            {lesson.texts.map((_, index) => {
                               const drillId = getDrillId(lesson, index);
                               const performance = progress[drillId];
                               return (

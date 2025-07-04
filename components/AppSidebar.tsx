@@ -57,6 +57,13 @@ const AppSidebar = ({ isOpen, onClose, onGoToHome, onShowModal, onNavigate, acti
       </nav>
 
       <div className="mt-auto pt-4 border-t border-border-primary">
+        <div className="mb-4 p-3 bg-tertiary/30 rounded-md text-xs text-text-secondary">
+          <p className="font-semibold mb-2">Quick Navigation:</p>
+          <div className="space-y-1">
+            <p><kbd className="bg-tertiary px-1 rounded text-xs">Esc</kbd> Back/Home</p>
+            <p><kbd className="bg-tertiary px-1 rounded text-xs">Tab</kbd> Restart Test</p>
+          </div>
+        </div>
         <button 
             onClick={() => handleAction(() => onShowModal('settings'))}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-semibold text-text-secondary hover:bg-tertiary hover:text-text-primary transition-colors mb-4"

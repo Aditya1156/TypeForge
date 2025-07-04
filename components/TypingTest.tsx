@@ -46,7 +46,14 @@ const TypingTest = ({ words, typed, totalTyped, caretStyle }: TypingTestProps) =
   }, [words, typed, totalTyped]);
 
   return (
-    <div className="relative text-2xl lg:text-3xl leading-relaxed break-all p-8 bg-secondary rounded-lg shadow-lg" onClick={() => document.body.focus()}>
+    <div 
+      className="relative text-2xl lg:text-3xl leading-relaxed break-all p-8 bg-secondary rounded-lg shadow-lg" 
+      onClick={() => {
+        // Ensure the document has focus for keyboard events
+        window.focus();
+      }}
+      tabIndex={0}
+    >
       {characters.map(({ char, state }, index) => (
         <span key={index} className="relative">
           {index === totalTyped && <Cursor style={caretStyle} />}
