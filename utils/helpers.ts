@@ -82,9 +82,13 @@ export type SoundType = 'correct' | 'error' | 'click' | 'success' | 'complete' |
 export const playSound = (type: SoundType) => {
   try {
     const ctx = initAudioContext();
-    if (ctx && ctx.state === 'suspended') {
-      ctx.resume();
+    if (!ctx) return;
+    
+    // Resume context if suspended (required for many browsers)
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(err => console.warn('Could not resume audio context:', err));
     }
+    
     switch (type) {
       case 'correct':
         createBeep(800, 0.1, 0.3, 'sine');

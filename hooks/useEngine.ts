@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { State, ErrorDetail } from '../types';
 import { generateWords } from '../utils/words';
 import { isKeyboardCode, calculateWPM, calculateAccuracy, getFingersForChar, calculateConsistency, playSound } from '../utils/helpers';
@@ -22,22 +22,58 @@ const useEngine = (isEnabled: boolean, isSoundEnabled: boolean) => {
   const keystrokeTimestamps = useRef<number[]>([]);
 
   const totalTyped = typed.length;
-  const wpm = startTime && endTime ? calculateWPM( (endTime - startTime) / 1000, totalTyped ) : 0;
-  const accuracy = calculateAccuracy(totalTyped, errors);
+
+  // Improved WPM calculation with memoization
+  const wpm = useMemo(() => {
+    if (!startTime || !endTime) return 0;
+    const timeInSeconds = (endTime - startTime) / 1000;
+    return timeInSeconds > 0 ? calculateWPM(timeInSeconds, totalTyped) : 0;
+  }, [startTime, endTime, totalTyped]);
+
+  const accuracy = useMemo(() => {
+    return calculateAccuracy(totalTyped, errors);
+  }, [totalTyped, errors]);
 
   const loadTest = useCallback((text?: string) => {
-    const newText = text || generateWords(NUMBER_OF_WORDS);
-    setCurrentTestText(newText);
-    setState("start");
-    setWords(newText);
-    setTyped("");
-    setErrors(0);
-    setErrorDetails([]);
-    setStartTime(null);
-    setEndTime(null);
-    setLiveWpm(0);
-    setConsistency(0);
-    keystrokeTimestamps.current = [];
+    try {
+      const newText = text || generateWords(NUMBER_OF_WORDS);
+      
+      // Validate text input
+      if (!newText || newText.trim().length === 0) {
+        console.warn('Invalid text provided, generating default words');
+        const fallbackText = generateWords(NUMBER_OF_WORDS);
+        setCurrentTestText(fallbackText);
+        setWords(fallbackText);
+      } else {
+        setCurrentTestText(newText);
+        setWords(newText);
+      }
+      
+      setState("start");
+      setTyped("");
+      setErrors(0);
+      setErrorDetails([]);
+      setStartTime(null);
+      setEndTime(null);
+      setLiveWpm(0);
+      setConsistency(0);
+      keystrokeTimestamps.current = [];
+    } catch (error) {
+      console.error('Error loading test:', error);
+      // Fallback to default words
+      const fallbackText = generateWords(NUMBER_OF_WORDS);
+      setCurrentTestText(fallbackText);
+      setWords(fallbackText);
+      setState("start");
+      setTyped("");
+      setErrors(0);
+      setErrorDetails([]);
+      setStartTime(null);
+      setEndTime(null);
+      setLiveWpm(0);
+      setConsistency(0);
+      keystrokeTimestamps.current = [];
+    }
   }, []);
   
   const restart = useCallback(() => {
@@ -65,15 +101,19 @@ const useEngine = (isEnabled: boolean, isSoundEnabled: boolean) => {
       return;
     }
 
+    // Handle backspace with proper bounds checking
     if (key === 'Backspace') {
       event.preventDefault();
-      setTyped((prev) => prev.slice(0, -1));
+      setTyped((prev) => {
+        if (prev.length === 0) return prev; // Prevent unnecessary updates
+        return prev.slice(0, -1);
+      });
       if (isSoundEnabled) playSound('backspace');
-      // Note: We don't remove timestamps on backspace to reflect the actual time taken.
       return;
     }
 
-    if (isKeyboardCode(code)) {
+    // Only process valid keyboard codes and prevent typing beyond text length
+    if (isKeyboardCode(code) && typed.length < words.length) {
       // More aggressive event prevention for better cross-browser compatibility
       event.preventDefault();
       event.stopPropagation();
@@ -103,17 +143,32 @@ const useEngine = (isEnabled: boolean, isSoundEnabled: boolean) => {
       }
       setTyped((prev) => prev + key);
     }
-  }, [state, words, typed, restart, isSoundEnabled]);
+  }, [state, words, typed.length, restart, isSoundEnabled]); // Optimized dependencies
 
-  // Effect for finishing the test
+  // Effect for finishing the test with error handling
   useEffect(() => {
     if (state === 'run' && typed.length === words.length && words.length > 0) {
-      setState('finish');
-      setEndTime(Date.now());
-      setConsistency(calculateConsistency(keystrokeTimestamps.current));
-      if (isSoundEnabled) playSound('complete');
+      try {
+        setState('finish');
+        setEndTime(Date.now());
+        
+        // Calculate consistency with validation
+        if (keystrokeTimestamps.current.length > 0) {
+          const consistencyValue = calculateConsistency(keystrokeTimestamps.current);
+          setConsistency(consistencyValue);
+        }
+        
+        if (isSoundEnabled) {
+          playSound('complete');
+        }
+      } catch (error) {
+        console.error('Error finishing test:', error);
+        // Ensure we still finish the test even if there's an error
+        setState('finish');
+        setEndTime(Date.now());
+      }
     }
-  }, [state, typed, words, isSoundEnabled]);
+  }, [state, typed.length, words.length, isSoundEnabled]);
 
   // Effect for main keydown listener
   useEffect(() => {
@@ -125,20 +180,32 @@ const useEngine = (isEnabled: boolean, isSoundEnabled: boolean) => {
     }
   }, [isEnabled, handleKeyDown]);
 
-  // Effect for calculating live WPM
+  // Effect for calculating live WPM with error handling
   useEffect(() => {
-      let interval: number | undefined;
-      if (state === 'run' && startTime) {
-          interval = window.setInterval(() => {
-              const timeElapsed = (Date.now() - startTime) / 1000;
-              setLiveWpm(calculateWPM(timeElapsed, typed.length));
-          }, 2000);
-      }
-      return () => {
-          if (interval) {
-              window.clearInterval(interval);
+    let interval: number | undefined;
+    
+    if (state === 'run' && startTime) {
+      interval = window.setInterval(() => {
+        try {
+          const timeElapsed = (Date.now() - startTime) / 1000;
+          if (timeElapsed > 0) {
+            const currentLiveWpm = calculateWPM(timeElapsed, typed.length);
+            // Only update if the value has changed to prevent unnecessary re-renders
+            setLiveWpm(prev => prev !== currentLiveWpm ? currentLiveWpm : prev);
           }
-      };
+        } catch (error) {
+          console.warn('Error calculating live WPM:', error);
+        }
+      }, 1000); // Update every second for smoother feedback
+    } else {
+      setLiveWpm(0);
+    }
+    
+    return () => {
+      if (interval) {
+        window.clearInterval(interval);
+      }
+    };
   }, [state, startTime, typed.length]);
 
 

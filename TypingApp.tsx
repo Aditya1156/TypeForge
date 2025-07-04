@@ -20,6 +20,7 @@ import { chapters } from './data/lessons';
 
 const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; onShowModal: (modal: ModalType) => void; }) => {
   const [view, setView] = useState<'lessons' | 'test' | 'guide' | 'dashboard'>('lessons');
+  const [previousView, setPreviousView] = useState<'lessons' | 'test' | 'guide' | 'dashboard'>('lessons');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
   const { isSoundEnabled, caretStyle } = useSettings();
@@ -106,7 +107,24 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
   const handleBackFromAi = useCallback(() => {
     setAiAnalysis(null);
     setAiError(null);
+    // Stay in the current view (test with results) - just hide the AI analysis panel
+    // The user can then use the regular navigation buttons in the Results component
   }, []);
+
+  const handlePracticeAiDrill = useCallback((drillText: string) => {
+    // Clear AI analysis state
+    setAiAnalysis(null);
+    setAiError(null);
+    
+    // Load the AI drill text and switch to test view
+    loadTest(drillText);
+    saveScrollPosition(view);
+    // Don't update previousView here - we want to preserve where the user originally came from
+    // The previousView should already be set to 'dashboard' or 'lessons' from the original drill selection
+    setView('test');
+    setCurrentLesson({ id: 'ai-drill', name: 'AI Generated Drill', texts: [drillText] });
+    setCurrentDrillIndex(0);
+  }, [loadTest, view, saveScrollPosition]);
 
   const handleRestart = useCallback(() => {
     restart();
@@ -115,6 +133,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
 
   const handleNavigate = (newView: 'lessons' | 'guide' | 'dashboard') => {
     saveScrollPosition(view);
+    setPreviousView(view);
     setView(newView);
   };
 
@@ -123,12 +142,14 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     resetAiState();
     setCurrentLesson(lesson);
     if (lesson.type === 'guide') {
+      setPreviousView(view);
       setView('guide');
       return;
     }
     
     setCurrentDrillIndex(0);
     loadTest(lesson.texts[0]);
+    setPreviousView(view);
     setView('test');
   }, [loadTest, view, saveScrollPosition]);
 
@@ -138,6 +159,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     setCurrentLesson(lesson);
     setCurrentDrillIndex(drillIndex);
     loadTest(lesson.texts[drillIndex]);
+    setPreviousView(view);
     setView('test');
   }, [loadTest, view, saveScrollPosition]);
   
@@ -153,16 +175,17 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     loadTest(); 
     setCurrentLesson({ id: 'random', name: "Random Word Challenge", texts: [] });
     setCurrentDrillIndex(0);
+    setPreviousView(view);
     setView('test');
     resetAiState();
   }, [loadTest, view, saveScrollPosition]);
 
   const handleBackToMenu = useCallback(() => {
     saveScrollPosition(view);
-    setView('lessons');
+    setView(previousView);
     setCurrentLesson(null);
     resetAiState();
-  }, [view, saveScrollPosition]);
+  }, [view, previousView, saveScrollPosition]);
 
   // ESC key handler for quick navigation
   useEffect(() => {
@@ -253,6 +276,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
       loadTest(drillText);
       setCurrentLesson({ id: 'ai-drill', name: `AI Drill: ${keys}`, texts: [drillText] });
       setCurrentDrillIndex(0);
+      setPreviousView(view);
       setView('test');
     } catch (error: any) {
       setAiDrillError(error.message || "Failed to generate AI drill.");
@@ -296,13 +320,13 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
               <button 
                 onClick={handleBackToMenu}
                 className="ml-16 p-2 text-text-secondary hover:text-accent transition-colors flex items-center gap-2"
-                title="Back to lessons"
+                title={`Back to ${previousView === 'dashboard' ? 'dashboard' : 'lessons'}`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m12 19-7-7 7-7"/>
                   <path d="M19 12H5"/>
                 </svg>
-                Back to Lessons
+                Back to {previousView === 'dashboard' ? 'Dashboard' : 'Lessons'}
               </button>
               <nav className="text-sm text-text-secondary">
                 <span>Home</span>
@@ -323,7 +347,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
               <button 
                 onClick={handleBackToMenu}
                 className="absolute left-16 top-0 p-2 text-text-secondary hover:text-accent transition-colors flex items-center gap-2"
-                title="Back to lessons"
+                title={`Back to ${previousView === 'dashboard' ? 'dashboard' : 'lessons'}`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m12 19-7-7 7-7"/>
@@ -336,7 +360,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
               <nav className="absolute right-0 top-0 text-xs text-text-secondary mt-2 hidden sm:block">
                 <span>Home</span>
                 <span className="mx-1">→</span>
-                <span>Lessons</span>
+                <span>{previousView === 'dashboard' ? 'Dashboard' : 'Lessons'}</span>
                 <span className="mx-1">→</span>
                 <span className="text-accent">
                   {currentLesson?.id === 'random' ? 'Random Test' : 
@@ -390,7 +414,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
 
               {isAiLoading && <LoadingSpinner />}
               {aiError && <p className="text-danger bg-danger/10 p-3 rounded-md">{aiError}</p>}
-              {aiAnalysis && <AiCoachFeedback aiAnalysis={aiAnalysis} onBack={handleBackFromAi} />}
+              {aiAnalysis && <AiCoachFeedback aiAnalysis={aiAnalysis} onBack={handleBackFromAi} onPracticeDrill={handlePracticeAiDrill} />}
             </main>
 
             <footer className="text-center text-text-secondary mt-16 text-sm">

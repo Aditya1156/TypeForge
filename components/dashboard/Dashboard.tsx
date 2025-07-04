@@ -1,10 +1,7 @@
-import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import StatsCards from './StatsCards';
-import PerformanceChart from './PerformanceChart';
-import ProblemAreas from './ProblemAreas';
+import DashboardTabs from './DashboardTabs';
 import LoadingSpinner from '../LoadingSpinner';
-import type { Progress, Lesson, DrillPerformance } from '../../types';
+import type { Progress, Lesson } from '../../types';
 
 interface DashboardProps {
     progress: Progress;
@@ -45,9 +42,8 @@ const Dashboard = ({ progress, isProgressLoaded, onSelectDrill }: DashboardProps
                  <h1 className="text-4xl font-bold text-text-primary">Your Dashboard</h1>
                  <p className="text-text-secondary mt-1">An overview of your typing journey.</p>
             </header>
-            <StatsCards performanceEntries={performanceEntries} />
-            <PerformanceChart performanceEntries={performanceEntries} />
-            <ProblemAreas progress={progress} onSelectDrill={onSelectDrill} />
+            
+            <DashboardTabs progress={progress} onSelectDrill={onSelectDrill} />
         </div>
     );
 };

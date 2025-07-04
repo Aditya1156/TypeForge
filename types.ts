@@ -66,7 +66,7 @@ export interface ToastContextType {
 }
 
 // Additions for Settings
-export type Theme = 'dark' | 'light' | 'hacker';
+export type Theme = 'dark' | 'light' | 'hacker' | 'ocean' | 'sunset' | 'forest';
 export type CaretStyle = 'line' | 'block' | 'underline';
 
 export interface SettingsContextType {
