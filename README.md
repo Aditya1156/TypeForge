@@ -187,11 +187,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React Community** for the excellent ecosystem and tools
 - **Contributors** who help make TypeForge better
 
+## 👨‍💻 Developer
+
+**Aditya Kumar**  
+Full Stack Developer & TypeForge Creator
+
+- 📧 Email: [adityaissc7@gmail.com](mailto:adityaissc7@gmail.com)
+- 🐙 GitHub: [@Aditya1156](https://github.com/Aditya1156)
+- 💼 LinkedIn: Connect with me for collaboration opportunities
+
+*Passionate about creating modern, user-friendly applications that help people improve their skills.*
+
 ## 📞 Support & Feedback
 
 - **Issues**: [GitHub Issues](https://github.com/Aditya1156/TypeForge/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Aditya1156/TypeForge/discussions)
-- **Email**: [Contact the developer](mailto:your-email@example.com)
+- **Developer**: Aditya Kumar - [adityaissc7@gmail.com](mailto:adityaissc7@gmail.com)
 
 ---
 
