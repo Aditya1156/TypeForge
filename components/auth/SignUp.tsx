@@ -6,9 +6,10 @@ import { validateEmail, validatePassword, sanitizeInput, isRateLimited, secureSe
 interface SignUpProps {
   onClose: () => void;
   onSwitchToSignIn: () => void;
+  onSignUpSuccess?: () => void;
 }
 
-const SignUp = ({ onClose, onSwitchToSignIn }: SignUpProps) => {
+const SignUp = ({ onClose, onSwitchToSignIn, onSignUpSuccess }: SignUpProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,10 +54,20 @@ const SignUp = ({ onClose, onSwitchToSignIn }: SignUpProps) => {
       // Set flag for redirect handling
       secureSessionStorage.set('signingIn', 'true');
       await signUp(sanitizedName, sanitizedEmail, sanitizedPassword);
-      onClose();
+      if (onSignUpSuccess) {
+        onSignUpSuccess();
+      } else {
+        onClose();
+      }
     } catch (err: any) {
       secureSessionStorage.remove('signingIn'); // Remove flag on error
-      setError(err.message || 'Failed to sign up. Please try again.');
+      
+      // Check if it's an email already exists error
+      if (err.message && err.message.includes('already exists')) {
+        setError(err.message);
+      } else {
+        setError(err.message || 'Failed to sign up. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +139,20 @@ const SignUp = ({ onClose, onSwitchToSignIn }: SignUpProps) => {
             <input type="password" id="password-signup" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full px-4 py-2 bg-tertiary border border-border-primary rounded-md text-text-primary focus:ring-2 focus:ring-accent focus:outline-none" />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && (
+            <div className="space-y-2">
+              <p className="text-sm text-danger">{error}</p>
+              {error.includes('already exists') && (
+                <button
+                  type="button"
+                  onClick={onSwitchToSignIn}
+                  className="w-full px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-md hover:bg-accent/20 transition-colors text-sm font-medium"
+                >
+                  Sign In Instead
+                </button>
+              )}
+            </div>
+          )}
           
           <button type="submit" disabled={isLoading || isGoogleLoading} className="w-full mt-2 flex justify-center items-center px-6 py-3 font-semibold text-primary bg-accent rounded-md hover:bg-accent/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-secondary focus:ring-accent transition-colors disabled:bg-tertiary">
             {isLoading ? <LoadingSpinner /> : 'Sign Up'}

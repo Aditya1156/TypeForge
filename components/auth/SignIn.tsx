@@ -59,7 +59,7 @@ const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => 
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setError('');
     
     // Rate limiting for Google sign-in
@@ -68,14 +68,19 @@ const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => 
       return;
     }
     
-    // Set flag for redirect handling
-    secureSessionStorage.set('signingIn', 'true');
-    
     setIsGoogleLoading(true);
-    signInWithGoogle().catch((err) => {
-      setError(err.message || 'Failed to start Google Sign-In.');
+    
+    try {
+      // Set flag for redirect handling
+      secureSessionStorage.set('signingIn', 'true');
+      await signInWithGoogle();
+      // The redirect will happen automatically, and the result will be handled by AuthContext
+    } catch (err: any) {
+      // Clear the signing in flag on error
+      secureSessionStorage.remove('signingIn');
+      setError(err.message || 'Failed to start Google Sign-In. Please try again.');
       setIsGoogleLoading(false);
-    });
+    }
   };
 
   return (
@@ -129,7 +134,20 @@ const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => 
             <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full px-4 py-2 bg-tertiary border border-border-primary rounded-md text-text-primary focus:ring-2 focus:ring-accent focus:outline-none" />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && (
+            <div className="space-y-2">
+              <p className="text-sm text-danger">{error}</p>
+              {error.includes('No account found') && (
+                <button
+                  type="button"
+                  onClick={onSwitchToSignUp}
+                  className="w-full px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-md hover:bg-accent/20 transition-colors text-sm font-medium"
+                >
+                  Create Account Instead
+                </button>
+              )}
+            </div>
+          )}
           
           <button type="submit" disabled={isLoading || isGoogleLoading} className="w-full mt-2 flex justify-center items-center px-6 py-3 font-semibold text-primary bg-accent rounded-md hover:bg-accent/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-secondary focus:ring-accent transition-colors disabled:bg-tertiary">
             {isLoading ? <LoadingSpinner /> : 'Sign In'}

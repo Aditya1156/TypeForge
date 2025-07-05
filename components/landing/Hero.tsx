@@ -39,7 +39,7 @@ const Hero = ({ onStartTyping }: HeroProps) => (
           onClick={onStartTyping}
           className="px-8 py-4 text-lg font-bold text-primary bg-accent rounded-xl shadow-lg shadow-accent/30 hover:bg-accent/90 hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
         >
-          Start Free Practice
+          Start Typing Practice
           <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>
@@ -59,7 +59,7 @@ const Hero = ({ onStartTyping }: HeroProps) => (
           <svg className="w-5 h-5 text-success mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-text-secondary">No Credit Card Required</span>
+          <span className="text-text-secondary">No Signup Required</span>
         </div>
         <div className="flex items-center justify-center sm:justify-start">
           <svg className="w-5 h-5 text-success mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ const Hero = ({ onStartTyping }: HeroProps) => (
           <svg className="w-5 h-5 text-success mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          <span className="text-text-secondary">Instant Results</span>
+          <span className="text-text-secondary">Instant Access</span>
         </div>
       </div>
     </div>

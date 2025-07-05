@@ -476,17 +476,9 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
       )}
 
       {/* App Header */}
-      <AppHeader onShowModal={onShowModal} />
+      <AppHeader onShowModal={onShowModal} onOpenSidebar={handleOpenSidebar} />
 
-      <button 
-        onClick={handleOpenSidebar}
-        className="fixed top-20 left-5 z-20 p-2 rounded-md text-text-primary bg-secondary/50 hover:bg-tertiary/50 transition-colors"
-        aria-label="Open menu"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="6"></line><line x1="4" x2="20" y1="12"></line><line x1="4" x2="20" y1="18"></line></svg>
-      </button>
-
-      <main className="flex-grow flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto pt-20">
+      <main className="flex-grow flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto pt-24 mt-16">
         <SessionLimitGuard onUpgrade={handleUpgrade} onSignIn={handleSignIn}>
           {renderContent()}
         </SessionLimitGuard>

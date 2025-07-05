@@ -1,19 +1,22 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import LandingPage from './components/landing/LandingPage';
 import TypingApp from './TypingApp';
-import SignIn from './components/auth/SignIn';
-import SignUp from './components/auth/SignUp';
-import Profile from './components/auth/Profile';
-import Settings from './components/Settings';
-import SubscriptionManager from './components/SubscriptionManager';
-import TrialTimer from './components/TrialTimer';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
+import { useToast } from './context/ToastContext';
 import { TimerProvider } from './context/TimerContext';
 import { secureSessionStorage } from './utils/security';
 import type { ModalType } from './types';
+
+// Lazy load auth and settings components for better performance
+const SignIn = lazy(() => import('./components/auth/SignIn'));
+const SignUp = lazy(() => import('./components/auth/SignUp'));
+const Profile = lazy(() => import('./components/auth/Profile'));
+const Settings = lazy(() => import('./components/Settings'));
+const SubscriptionManager = lazy(() => import('./components/SubscriptionManager'));
 
 const App = () => {
   const [view, setView] = useState<'landing' | 'app'>('landing');
@@ -21,6 +24,10 @@ const App = () => {
   const [initialAuthChecked, setInitialAuthChecked] = useState(false);
   const { user, isLoading } = useAuth();
   const { theme } = useSettings();
+  const { addToast } = useToast();
+
+  // Check if this is a Google Sign-In redirect by looking at URL parameters
+  const isGoogleRedirect = window.location.search.includes('state=') || window.location.search.includes('code=');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -31,7 +38,10 @@ const App = () => {
     if (!isLoading && user && user.uid !== 'guest' && !initialAuthChecked) {
       // Check if user was just authenticated (not initial load with existing auth)
       const wasSigningIn = secureSessionStorage.get('signingIn');
+      console.log('Auth check:', { wasSigningIn, view, userUid: user.uid });
+      
       if (wasSigningIn && view === 'landing') {
+        console.log('Redirecting to main app after authentication');
         setView('app');
         setActiveModal(null);
         secureSessionStorage.remove('signingIn');
@@ -40,9 +50,24 @@ const App = () => {
     }
   }, [user, isLoading, view, initialAuthChecked]);
 
-  // Handle redirect to landing page after sign-out
+  // Additional check for Google Sign-In redirects that might not have the signingIn flag
   useEffect(() => {
-    if (!isLoading && (!user || user.uid === 'guest') && view === 'app') {
+    if (!isLoading && user && user.uid !== 'guest' && view === 'landing') {
+      // Check if this is likely a Google Sign-In redirect (no signingIn flag but user exists)
+      const wasSigningIn = secureSessionStorage.get('signingIn');
+      if (!wasSigningIn && !initialAuthChecked && isGoogleRedirect) {
+        // This is definitely a Google Sign-In redirect
+        console.log('Google Sign-In redirect detected via URL parameters, switching to app view');
+        setView('app');
+        setActiveModal(null);
+      }
+    }
+  }, [user, isLoading, view, initialAuthChecked, isGoogleRedirect]);
+
+  // Handle redirect to landing page after sign-out (but keep guests in app)
+  useEffect(() => {
+    if (!isLoading && !user && view === 'app') {
+      // Only redirect to landing if user is null (signed out), not guests
       setView('landing');
       setActiveModal(null);
     }
@@ -73,9 +98,18 @@ const App = () => {
     };
   }, []);
   
-  const handleStartTyping = () => {
-    setView('app');
-  };
+  const handleStartTyping = useCallback(() => {
+    // Allow guest access but encourage sign-up for authenticated users
+    if (user && user.uid !== 'guest') {
+      // If authenticated, go to app
+      setView('app');
+      addToast('Welcome back! Enjoy unlimited typing practice.', 'success');
+    } else {
+      // Allow guest access - no sign-up required initially
+      setView('app');
+      addToast('🎉 Start practicing! Sign up anytime to save your progress.', 'success');
+    }
+  }, [user, addToast]);
 
   const handleGoToLanding = () => {
     setView('landing');
@@ -99,28 +133,33 @@ const App = () => {
     setActiveModal('signIn');
   }, []);
 
-  const renderModal = () => {
+  const renderModal = useCallback(() => {
     if (!activeModal) return null;
-    switch(activeModal) {
-      case 'signIn':
-        return <SignIn onClose={handleCloseModal} onSwitchToSignUp={() => handleShowModal('signUp')} onSignInSuccess={handleSignInSuccess} />;
-      case 'signUp':
-        return <SignUp onClose={handleCloseModal} onSwitchToSignIn={handleShowSignInModal} />;
-      case 'profile':
-        return user ? <Profile onClose={handleCloseModal} /> : null;
-      case 'settings':
-        return <Settings onClose={handleCloseModal} onUpgrade={() => handleShowModal('upgrade')} />;
-      case 'upgrade':
-        return <SubscriptionManager onClose={handleCloseModal} />;
-      default:
-        return null;
-    }
-  };
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        {(() => {
+          switch(activeModal) {
+            case 'signIn':
+              return <SignIn onClose={handleCloseModal} onSwitchToSignUp={() => handleShowModal('signUp')} onSignInSuccess={handleSignInSuccess} />;
+            case 'signUp':
+              return <SignUp onClose={handleCloseModal} onSwitchToSignIn={handleShowSignInModal} onSignUpSuccess={handleSignInSuccess} />;
+            case 'profile':
+              return user ? <Profile onClose={handleCloseModal} /> : null;
+            case 'settings':
+              return <Settings onClose={handleCloseModal} onUpgrade={() => handleShowModal('upgrade')} />;
+            case 'upgrade':
+              return <SubscriptionManager onClose={handleCloseModal} />;
+            default:
+              return null;
+          }
+        })()}
+      </Suspense>
+    );
+  }, [activeModal, user, handleCloseModal, handleShowModal, handleSignInSuccess, handleShowSignInModal]);
 
   return (
     <ErrorBoundary>
       <TimerProvider>
-        <TrialTimer onSignIn={() => handleShowModal('signIn')} />
         <ToastContainer />
         {view === 'landing' ? (
           <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} onShowSignIn={handleShowSignInModal} />
@@ -130,7 +169,9 @@ const App = () => {
             onShowModal={handleShowModal}
           />
         )}
-        {renderModal()}
+        <Suspense fallback={<LoadingSpinner />}>
+          {renderModal()}
+        </Suspense>
       </TimerProvider>
     </ErrorBoundary>
   );

@@ -20,11 +20,62 @@ const Dashboard = ({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: Das
         return <div className="flex justify-center items-center h-64"><LoadingSpinner /></div>;
     }
 
-    if (!user) {
+    if (!user || user.uid === 'guest') {
+        // For guest users, show basic dashboard with local stats
         return (
-            <div className="text-center p-8 bg-secondary rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-accent">Dashboard</h2>
-                <p className="mt-2 text-text-secondary">Please sign in to view your personalized dashboard and track your progress.</p>
+            <div className="w-full max-w-6xl mx-auto flex flex-col gap-6">
+                <header className="text-center">
+                    <h1 className="text-3xl font-bold text-text-primary mb-2">Guest Dashboard</h1>
+                    <p className="text-text-secondary">Basic stats from your current session. Sign up to save progress!</p>
+                </header>
+                
+                {/* Guest Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-secondary p-6 rounded-lg border border-border-primary">
+                        <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wide">Session Stats</h3>
+                        <p className="text-2xl font-bold text-accent mt-2">Current Session</p>
+                        <p className="text-sm text-text-secondary mt-1">Progress not saved</p>
+                    </div>
+                    
+                    <div className="bg-secondary p-6 rounded-lg border border-border-primary">
+                        <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wide">Guest Mode</h3>
+                        <p className="text-2xl font-bold text-accent mt-2">Limited Features</p>
+                        <p className="text-sm text-text-secondary mt-1">Sign up for full access</p>
+                    </div>
+                    
+                    <div className="bg-secondary p-6 rounded-lg border border-border-primary">
+                        <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wide">Available</h3>
+                        <p className="text-2xl font-bold text-accent mt-2">Basic Lessons</p>
+                        <p className="text-sm text-text-secondary mt-1">Typing practice & tests</p>
+                    </div>
+                    
+                    <div className="bg-secondary p-6 rounded-lg border border-border-primary">
+                        <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wide">Upgrade</h3>
+                        <p className="text-2xl font-bold text-accent mt-2">Sign Up</p>
+                        <p className="text-sm text-text-secondary mt-1">Save progress & more</p>
+                    </div>
+                </div>
+                
+                {/* Guest CTA */}
+                <div className="bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20 rounded-lg p-6 text-center">
+                    <h3 className="text-xl font-bold text-text-primary mb-2">🚀 Ready to unlock your full potential?</h3>
+                    <p className="text-text-secondary mb-4">Sign up to save your progress, access advanced features, and track your improvement over time.</p>
+                    <div className="space-y-2">
+                        <button 
+                            onClick={onUpgrade}
+                            className="px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-primary font-semibold rounded-lg hover:from-accent/90 hover:to-accent/70 transition-all duration-300 shadow-lg hover:shadow-xl mr-2"
+                        >
+                            Sign Up Free
+                        </button>
+                        <p className="text-xs text-text-secondary">No credit card required • Start saving progress immediately</p>
+                    </div>
+                </div>
+                
+                {/* Basic Timer Widget for guests */}
+                <div className="bg-secondary border border-border-primary rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-text-primary mb-4">Practice Timer</h3>
+                    <TimerWidget />
+                </div>
             </div>
         );
     }
@@ -34,7 +85,7 @@ const Dashboard = ({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: Das
     if (performanceEntries.length === 0) {
        return (
             <div className="text-center p-8 bg-secondary rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-accent">Welcome, {user.name || user.email}!</h2>
+                <h2 className="text-2xl font-bold text-accent">Welcome, {user.name || user.email?.split('@')[0] || 'User'}!</h2>
                 <p className="mt-2 text-text-secondary">Your dashboard is ready. Complete some lessons to see your stats here.</p>
             </div>
         );

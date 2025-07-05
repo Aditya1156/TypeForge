@@ -10,7 +10,14 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 
     useEffect(() => {
         const storedTheme = localStorage.getItem('typeforge-theme') as Theme | null;
-        if (storedTheme) setThemeState(storedTheme);
+        if (storedTheme) {
+            setThemeState(storedTheme);
+        } else {
+            // Default to dark theme if no stored preference
+            setThemeState('dark');
+            localStorage.setItem('typeforge-theme', 'dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
 
         const storedSound = localStorage.getItem('typeforge-sound');
         if (storedSound) setIsSoundEnabled(JSON.parse(storedSound));

@@ -79,10 +79,10 @@ const AppSidebar = ({ isOpen, onClose, onGoToHome, onShowModal, onNavigate, acti
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
             Settings
         </button>
-        {user ? (
+        {user && user.uid !== 'guest' ? (
           <div className="p-3 rounded-lg bg-tertiary">
-            <p className="text-sm text-text-primary font-semibold truncate">{user.name || user.email}</p>
-            <p className="text-xs text-text-secondary truncate">{user.email}</p>
+            <p className="text-sm text-text-primary font-semibold truncate">{user.name || user.email?.split('@')[0] || 'User'}</p>
+            <p className="text-xs text-text-secondary truncate">{user.email || 'No email'}</p>
             <button 
               onClick={() => handleAction(() => onShowModal('profile'))}
               className="w-full text-center mt-3 px-3 py-1.5 text-xs font-semibold bg-tertiary/80 hover:bg-border-primary rounded-md transition-colors"
@@ -91,10 +91,16 @@ const AppSidebar = ({ isOpen, onClose, onGoToHome, onShowModal, onNavigate, acti
             </button>
           </div>
         ) : (
-          <div className="text-center">
-             <button 
-              onClick={() => handleAction(() => onShowModal('signIn'))}
+          <div className="text-center space-y-2">
+            <button 
+              onClick={() => handleAction(() => onShowModal('signUp'))}
               className="w-full text-center px-4 py-2.5 font-semibold bg-accent text-primary hover:bg-accent/80 rounded-md transition-colors"
+            >
+              Sign Up
+            </button>
+            <button 
+              onClick={() => handleAction(() => onShowModal('signIn'))}
+              className="w-full text-center px-4 py-2.5 font-semibold bg-white/10 text-text-primary hover:bg-white/20 rounded-md transition-colors"
             >
               Sign In
             </button>

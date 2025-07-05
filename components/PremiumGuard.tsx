@@ -29,9 +29,46 @@ const PremiumGuard: React.FC<PremiumGuardProps> = ({
 }) => {
   const { user } = useAuth();
 
-  // If no user or guest user, show upgrade prompts  
+  // If no user or guest user, treat them exactly like free users
   if (!user || user.uid === 'guest') {
-    // For guest users, treat them as free users and show upgrade prompts
+    // Create a free user object for consistent access checking
+    const freeUserForChecking = user || {
+      uid: 'guest',
+      name: null,
+      email: null,
+      subscription: { 
+        tier: 'free' as const,
+        startDate: new Date().toISOString(),
+        sessionsUsed: 0,
+        lastSessionDate: new Date().toISOString().split('T')[0],
+        trialUsed: false
+      },
+      features: {
+        aiCoach: false,
+        advancedAnalytics: false,
+        unlimitedSessions: false,
+        customLessons: false,
+        exportData: false,
+        themesUnlocked: 2,
+        lessonsUnlocked: 5,
+        practiceModesUnlocked: ['keys', 'words'] as const
+      }
+    };
+
+    // Use the same access check logic as authenticated free users
+    const hasAccess = checkFeatureAccess(freeUserForChecking, feature, {
+      requiredTier,
+      themeCount,
+      lessonCount,
+      practiceMode
+    });
+
+    // If guest has access (within free limits), show content
+    if (hasAccess) {
+      return <>{children}</>;
+    }
+
+    // For features beyond free limits, show upgrade prompts
     if (showBlurred) {
       return (
         <div className="relative group cursor-pointer" onClick={onUpgradeClick}>

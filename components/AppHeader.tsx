@@ -1,15 +1,42 @@
 import { useAuth } from '../context/AuthContext';
 import { useTimer } from '../context/TimerContext';
+import { useState, useEffect } from 'react';
 import PremiumBadge from './PremiumBadge';
 import type { ModalType } from '../types';
 
 interface AppHeaderProps {
   onShowModal: (modal: ModalType) => void;
+  onOpenSidebar: () => void;
 }
 
-const AppHeader = ({ onShowModal }: AppHeaderProps) => {
+const AppHeader = ({ onShowModal, onOpenSidebar }: AppHeaderProps) => {
   const { user } = useAuth();
   const { timerStats } = useTimer();
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Handle scroll behavior for auto-hide header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show header when at top of page
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide header when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   // Calculate session limit based on subscription
   const getSessionInfo = () => {
@@ -47,32 +74,56 @@ const AppHeader = ({ onShowModal }: AppHeaderProps) => {
   const todaySessionCount = sessionInfo.used;
 
   return (
-    <header className="w-full bg-secondary/30 backdrop-blur-sm border-b border-border-primary">
+    <header className={`fixed top-0 left-0 right-0 w-full bg-secondary/30 backdrop-blur-sm border-b border-border-primary z-50 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left side - User Profile */}
-          <button 
-            onClick={() => onShowModal('profile')}
-            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-300 group"
-            title="View Profile"
-          >
-            <div className="w-10 h-10 bg-gradient-to-r from-accent to-accent/80 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          {/* Left side - Menu button and User Profile */}
+          <div className="flex items-center space-x-2">
+            {/* Menu Button */}
+            <button 
+              onClick={onOpenSidebar}
+              className="p-2 rounded-md text-text-primary hover:bg-white/5 transition-colors"
+              aria-label="Open menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" x2="20" y1="6"></line>
+                <line x1="4" x2="20" y1="12"></line>
+                <line x1="4" x2="20" y1="18"></line>
               </svg>
-            </div>
-            <div className="flex flex-col items-start">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-text-primary">
-                  {user?.name || user?.email?.split('@')[0] || 'Guest'}
-                </span>
-                {user && user.uid !== 'guest' && (
-                  <PremiumBadge tier={user.subscription?.tier || 'free'} size="sm" />
-                )}
+            </button>
+
+            {/* User Profile */}
+            <button 
+              onClick={() => {
+                if (user?.uid === 'guest') {
+                  onShowModal('signUp');
+                } else {
+                  onShowModal('profile');
+                }
+              }}
+              className="flex items-center space-x-3 px-2 py-2 rounded-lg hover:bg-white/5 transition-all duration-300 group"
+              title={user?.uid === 'guest' ? 'Sign up for full features' : 'View Profile'}
+            >
+              <div className="w-10 h-10 bg-gradient-to-r from-accent to-accent/80 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
-              <span className="text-xs text-text-secondary">Click to view profile</span>
-            </div>
-          </button>
+              <div className="flex flex-col items-start">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-text-primary">
+                    {user?.name || user?.email?.split('@')[0] || 'User'}
+                  </span>
+                  {user && user.uid !== 'guest' && (
+                    <PremiumBadge tier={user.subscription?.tier || 'free'} size="sm" />
+                  )}
+                </div>
+                <span className="text-xs text-text-secondary">
+                  {user?.uid === 'guest' ? 'Click to sign up' : 'Click to view profile'}
+                </span>
+              </div>
+            </button>
+          </div>
 
           {/* Center - Time Tracking */}
           <div className="hidden md:flex items-center space-x-6">

@@ -14,14 +14,14 @@ const CallToAction = ({ onStartTyping }: { onStartTyping: () => void }) => (
             onClick={onStartTyping}
             className="px-8 py-4 text-lg font-bold text-primary bg-accent rounded-xl shadow-lg shadow-accent/30 hover:bg-accent/90 hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 transform hover:scale-105"
           >
-            Start Your Free Practice Now
+            Start Practicing Now
             <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </button>
           
           <div className="text-sm text-text-secondary">
-            <p>✓ No signup required  ✓ Free forever  ✓ AI analysis included</p>
+            <p>✓ No signup required  ✓ Sign up for progress tracking  ✓ AI analysis included</p>
           </div>
         </div>
 
