@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import type { SubscriptionTier } from '../types';
 
 interface PremiumFeatureCardProps {
@@ -22,7 +23,25 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
   children
 }) => {
   const { user } = useAuth();
-  
+  const { theme } = useSettings();
+
+  // Theme-aware overlay styles
+  const getThemeOverlayStyles = () => {
+    switch (theme) {
+      case 'light':
+        return 'bg-white/10 backdrop-blur-sm border border-white/20';
+      case 'hacker':
+        return 'bg-green-900/10 backdrop-blur-sm border border-green-500/20';
+      case 'ocean':
+        return 'bg-blue-900/10 backdrop-blur-sm border border-blue-500/20';
+      case 'sunset':
+        return 'bg-orange-900/10 backdrop-blur-sm border border-orange-500/20';
+      case 'forest':
+        return 'bg-green-900/10 backdrop-blur-sm border border-green-600/20';
+      default: // dark
+        return 'bg-primary/5 backdrop-blur-sm border border-white/10';
+    }
+  };
 
 
   const hasAccess = () => {
@@ -85,7 +104,7 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
       {/* Lock overlay for locked features */}
       {!userHasAccess && children && (
         <div 
-          className="absolute inset-0 bg-gradient-to-br from-primary/85 to-secondary/85 backdrop-blur-md rounded-xl flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-300 hover:from-primary/90 hover:to-secondary/90 hover:scale-[1.02] cursor-pointer z-10"
+          className={`absolute inset-0 ${getThemeOverlayStyles()} rounded-xl flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-300 hover:scale-[1.01] cursor-pointer z-10`}
           onClick={() => {
             if (onUpgrade) {
               onUpgrade();

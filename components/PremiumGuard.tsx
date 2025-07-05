@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import type { SubscriptionTier, PracticeMode } from '../types';
 
 interface PremiumGuardProps {
@@ -28,6 +29,51 @@ const PremiumGuard: React.FC<PremiumGuardProps> = ({
   overlayClassName
 }) => {
   const { user } = useAuth();
+  const { theme } = useSettings();
+
+  // Theme-aware blur and overlay styles
+  const getThemeAwareStyles = () => {
+    switch (theme) {
+      case 'light':
+        return {
+          blurClass: 'blur-[2px] pointer-events-none select-none opacity-80 transition-all duration-300 group-hover:opacity-70',
+          overlayClass: 'bg-white/10 backdrop-blur-sm border border-white/20',
+          overlayGradient: 'from-white/5 to-gray-100/10'
+        };
+      case 'hacker':
+        return {
+          blurClass: 'blur-[2px] pointer-events-none select-none opacity-85 transition-all duration-300 group-hover:opacity-75',
+          overlayClass: 'bg-green-900/10 backdrop-blur-sm border border-green-500/20',
+          overlayGradient: 'from-green-900/5 to-green-800/10'
+        };
+      case 'ocean':
+        return {
+          blurClass: 'blur-[2px] pointer-events-none select-none opacity-85 transition-all duration-300 group-hover:opacity-75',
+          overlayClass: 'bg-blue-900/10 backdrop-blur-sm border border-blue-500/20',
+          overlayGradient: 'from-blue-900/5 to-blue-800/10'
+        };
+      case 'sunset':
+        return {
+          blurClass: 'blur-[2px] pointer-events-none select-none opacity-85 transition-all duration-300 group-hover:opacity-75',
+          overlayClass: 'bg-orange-900/10 backdrop-blur-sm border border-orange-500/20',
+          overlayGradient: 'from-orange-900/5 to-red-800/10'
+        };
+      case 'forest':
+        return {
+          blurClass: 'blur-[2px] pointer-events-none select-none opacity-85 transition-all duration-300 group-hover:opacity-75',
+          overlayClass: 'bg-green-900/10 backdrop-blur-sm border border-green-600/20',
+          overlayGradient: 'from-green-900/5 to-green-700/10'
+        };
+      default: // dark
+        return {
+          blurClass: 'blur-[2px] pointer-events-none select-none opacity-85 transition-all duration-300 group-hover:opacity-75',
+          overlayClass: 'bg-primary/5 backdrop-blur-sm border border-white/10',
+          overlayGradient: 'from-primary/5 to-secondary/10'
+        };
+    }
+  };
+
+  const themeStyles = getThemeAwareStyles();
 
   // If no user or guest user, treat them exactly like free users
   if (!user || user.uid === 'guest') {
@@ -72,13 +118,13 @@ const PremiumGuard: React.FC<PremiumGuardProps> = ({
     if (showBlurred) {
       return (
         <div className="relative group cursor-pointer" onClick={onUpgradeClick}>
-          {/* Blurred content */}
-          <div className="blur-sm pointer-events-none select-none opacity-50 transition-all duration-300 group-hover:opacity-40">
+          {/* Enhanced blurred content - more visible */}
+          <div className={themeStyles.blurClass}>
             {children}
           </div>
           
-          {/* Premium overlay with enhanced UX - Compact version */}
-          <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/85 to-secondary/85 backdrop-blur-md rounded-lg transition-all duration-300 group-hover:from-primary/90 group-hover:to-secondary/90 group-hover:scale-[1.02] ${overlayClassName || ''}`}>
+          {/* Theme-aware premium overlay */}
+          <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${themeStyles.overlayGradient} ${themeStyles.overlayClass} rounded-lg transition-all duration-300 group-hover:scale-[1.01] ${overlayClassName || ''}`}>
             <div className="text-center p-4 max-w-xs mx-4">            <div className="mb-3 relative">
               <div className="absolute inset-0 w-10 h-10 bg-accent/20 rounded-full blur-lg mx-auto"></div>
               <div className="relative w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center mx-auto shadow-lg">
@@ -173,13 +219,13 @@ const PremiumGuard: React.FC<PremiumGuardProps> = ({
   if (showBlurred || !hasAccess) {
     return (
       <div className="relative group cursor-pointer" onClick={onUpgradeClick}>
-        {/* Blurred content */}
-        <div className="blur-sm pointer-events-none select-none opacity-50 transition-all duration-300 group-hover:opacity-40">
+        {/* Enhanced blurred content - more visible */}
+        <div className={themeStyles.blurClass}>
           {children}
         </div>
         
-        {/* Premium overlay with enhanced UX */}
-        <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/85 to-secondary/85 backdrop-blur-md rounded-lg transition-all duration-300 group-hover:from-primary/90 group-hover:to-secondary/90 group-hover:scale-[1.02] ${overlayClassName || ''}`}>
+        {/* Theme-aware premium overlay */}
+        <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${themeStyles.overlayGradient} ${themeStyles.overlayClass} rounded-lg transition-all duration-300 group-hover:scale-[1.01] ${overlayClassName || ''}`}>
           <div className="text-center p-4 max-w-xs mx-4">
             {/* Premium Icon with glow effect - Compact version */}
             <div className="mb-3 relative">
