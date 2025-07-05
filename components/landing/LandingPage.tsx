@@ -10,16 +10,13 @@ import type { ModalType } from '../../types';
 interface LandingPageProps {
   onStartTyping: () => void;
   onShowModal: (modal: ModalType) => void;
+  onShowSignIn?: () => void;
 }
 
-const LandingPage = ({ onStartTyping, onShowModal }: LandingPageProps) => {
-  const handleShowUpgrade = () => {
-    onShowModal('upgrade');
-  };
-
+const LandingPage = ({ onStartTyping, onShowModal, onShowSignIn }: LandingPageProps) => {
   return (
     <div className="font-sans bg-primary">
-      <Header onShowModal={onShowModal} onStartTyping={onStartTyping} onShowUpgrade={handleShowUpgrade} />
+      <Header onShowModal={onShowModal} onShowSignIn={onShowSignIn} />
       <main>
         <Hero onStartTyping={onStartTyping} />
         <Features />

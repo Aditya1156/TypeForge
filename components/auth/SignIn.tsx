@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../LoadingSpinner';
-import { validateEmail, sanitizeInput, isRateLimited } from '../../utils/security';
+import { validateEmail, sanitizeInput, isRateLimited, secureSessionStorage } from '../../utils/security';
 
 interface SignInProps {
   onClose: () => void;
   onSwitchToSignUp: () => void;
+  onSignInSuccess?: () => void;
 }
 
-const SignIn = ({ onClose, onSwitchToSignUp }: SignInProps) => {
+const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,9 +43,16 @@ const SignIn = ({ onClose, onSwitchToSignUp }: SignInProps) => {
     
     setIsLoading(true);
     try {
+      // Set flag for redirect handling
+      secureSessionStorage.set('signingIn', 'true');
       await signIn(sanitizedEmail, sanitizedPassword);
-      onClose();
+      if (onSignInSuccess) {
+        onSignInSuccess();
+      } else {
+        onClose();
+      }
     } catch (err: any) {
+      secureSessionStorage.remove('signingIn'); // Remove flag on error
       setError(err.message || 'Failed to sign in. Please try again.');
     } finally {
       setIsLoading(false);
@@ -59,6 +67,9 @@ const SignIn = ({ onClose, onSwitchToSignUp }: SignInProps) => {
       setError('Too many Google sign-in attempts. Please wait a minute before trying again.');
       return;
     }
+    
+    // Set flag for redirect handling
+    secureSessionStorage.set('signingIn', 'true');
     
     setIsGoogleLoading(true);
     signInWithGoogle().catch((err) => {

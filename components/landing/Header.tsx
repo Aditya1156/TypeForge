@@ -1,20 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
-import { useGuestTrial } from '../../hooks/useGuestTrial';
-import PremiumBadge from '../PremiumBadge';
 import type { ModalType, Theme } from '../../types';
 
 interface HeaderProps {
   onShowModal: (modal: ModalType) => void;
-  onStartTyping: () => void;
-  onShowUpgrade?: () => void;
+  onShowSignIn?: () => void;
 }
 
-const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
+const Header = ({ onShowModal, onShowSignIn }: HeaderProps) => {
   const { user, isLoading } = useAuth();
   const { theme, setTheme } = useSettings();
-  const { isActive: trialActive } = useGuestTrial();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
@@ -61,7 +57,7 @@ const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
 
   return (
     <>
-      <header className={`absolute left-0 right-0 z-20 bg-gradient-to-r from-primary/85 via-primary/70 to-primary/85 backdrop-blur-lg border-b border-white/5 shadow-xl ${trialActive ? 'top-10' : 'top-0'}`}>
+      <header className="absolute left-0 right-0 top-0 z-20 bg-gradient-to-r from-primary/85 via-primary/70 to-primary/85 backdrop-blur-lg border-b border-white/5 shadow-xl">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex justify-between items-center">
             <button 
@@ -121,8 +117,8 @@ const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
                           <button
                             key={themeOption.value}
                             onClick={() => {
-                              if (isLocked && onShowUpgrade) {
-                                onShowUpgrade();
+                              if (isLocked) {
+                                onShowModal('signUp');
                               } else {
                                 setTheme(themeOption.value);
                                 setIsThemeDropdownOpen(false);
@@ -161,38 +157,10 @@ const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
           <div className="hidden md:flex items-center space-x-3">
             {isLoading ? (
               <div className="h-10 w-32 bg-white/10 animate-pulse rounded-lg backdrop-blur-sm"></div>
-            ) : user ? (
-              <div className="flex items-center space-x-3">
-                {/* Premium Badge */}
-                <PremiumBadge tier={user.subscription?.tier || 'free'} size="sm" />
-                
-                {/* Upgrade Button for Free Users */}
-                {user.subscription?.tier === 'free' && onShowUpgrade && (
-                  <button
-                    onClick={onShowUpgrade}
-                    className="px-4 py-2 font-medium text-accent border border-accent/50 rounded-lg hover:bg-accent hover:text-primary transition-all duration-300"
-                  >
-                    Upgrade
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => onShowModal('profile')}
-                  className="px-5 py-2 font-medium text-text-primary bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 hover:scale-105 transition-all duration-300 border border-white/20 shadow-md"
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={onStartTyping}
-                  className="px-5 py-2 font-semibold text-primary bg-gradient-to-r from-accent to-accent/80 rounded-lg hover:from-accent/90 hover:to-accent/70 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Dashboard
-                </button>
-              </div>
             ) : (
               <>
                 <button 
-                  onClick={() => onShowModal('signIn')} 
+                  onClick={() => onShowSignIn ? onShowSignIn() : onShowModal('signIn')} 
                   className="px-4 py-2 font-medium text-text-primary hover:text-accent transition-all duration-300 hover:bg-white/5 rounded-md"
                 >
                   Sign In
@@ -263,8 +231,8 @@ const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
                         <button
                           key={themeOption.value}
                           onClick={() => {
-                            if (isLocked && onShowUpgrade) {
-                              onShowUpgrade();
+                            if (isLocked) {
+                              onShowModal('signUp');
                               setIsMobileMenuOpen(false);
                             } else {
                               setTheme(themeOption.value);
@@ -296,48 +264,11 @@ const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
               <div className="flex flex-col items-center space-y-4 pt-8">
                 {isLoading ? (
                   <div className="h-12 w-32 bg-white/10 animate-pulse rounded-lg backdrop-blur-sm"></div>
-                ) : user ? (
-                  <div className="flex flex-col items-center space-y-4">
-                    {/* Mobile Premium Badge */}
-                    <PremiumBadge tier={user.subscription?.tier || 'free'} size="md" />
-                    
-                    {/* Mobile Upgrade Button for Free Users */}
-                    {user.subscription?.tier === 'free' && onShowUpgrade && (
-                      <button
-                        onClick={() => {
-                          onShowUpgrade();
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="px-6 py-3 font-medium text-accent border border-accent/50 rounded-lg hover:bg-accent hover:text-primary transition-all duration-300"
-                      >
-                        Upgrade to Premium
-                      </button>
-                    )}
-                    
-                    <button
-                      onClick={() => {
-                        onShowModal('profile');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="px-6 py-3 font-medium text-text-primary bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 hover:scale-105 transition-all duration-300 border border-white/20 shadow-lg"
-                    >
-                      Profile
-                    </button>
-                    <button
-                      onClick={() => {
-                        onStartTyping();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="px-8 py-3 font-semibold text-primary bg-gradient-to-r from-accent to-accent/80 rounded-lg hover:from-accent/90 hover:to-accent/70 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                      Dashboard
-                    </button>
-                  </div>
                 ) : (
                   <>
                     <button 
                       onClick={() => {
-                        onShowModal('signIn');
+                        onShowSignIn ? onShowSignIn() : onShowModal('signIn');
                         setIsMobileMenuOpen(false);
                       }} 
                       className="text-xl text-text-primary hover:text-accent transition-all duration-300 py-3 px-6 rounded-lg hover:bg-white/10"

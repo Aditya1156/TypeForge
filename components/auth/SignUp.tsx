@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../LoadingSpinner';
-import { validateEmail, validatePassword, sanitizeInput, isRateLimited } from '../../utils/security';
+import { validateEmail, validatePassword, sanitizeInput, isRateLimited, secureSessionStorage } from '../../utils/security';
 
 interface SignUpProps {
   onClose: () => void;
@@ -50,9 +50,12 @@ const SignUp = ({ onClose, onSwitchToSignIn }: SignUpProps) => {
     
     setIsLoading(true);
     try {
+      // Set flag for redirect handling
+      secureSessionStorage.set('signingIn', 'true');
       await signUp(sanitizedName, sanitizedEmail, sanitizedPassword);
       onClose();
     } catch (err: any) {
+      secureSessionStorage.remove('signingIn'); // Remove flag on error
       setError(err.message || 'Failed to sign up. Please try again.');
     } finally {
       setIsLoading(false);
@@ -61,6 +64,8 @@ const SignUp = ({ onClose, onSwitchToSignIn }: SignUpProps) => {
   
   const handleGoogleSignIn = () => {
     setError('');
+    // Set flag for redirect handling
+    secureSessionStorage.set('signingIn', 'true');
     setIsGoogleLoading(true);
     signInWithGoogle().catch((err) => {
       setError(err.message || 'Failed to start Google Sign-In.');

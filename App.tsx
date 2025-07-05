@@ -18,12 +18,27 @@ import type { ModalType } from './types';
 const App = () => {
   const [view, setView] = useState<'landing' | 'app'>('landing');
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
-  const { user } = useAuth();
+  const [initialAuthChecked, setInitialAuthChecked] = useState(false);
+  const { user, isLoading } = useAuth();
   const { theme } = useSettings();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Handle redirect to main app after successful authentication
+  useEffect(() => {
+    if (!isLoading && user && user.uid !== 'guest' && !initialAuthChecked) {
+      // Check if user was just authenticated (not initial load with existing auth)
+      const wasSigningIn = secureSessionStorage.get('signingIn');
+      if (wasSigningIn && view === 'landing') {
+        setView('app');
+        setActiveModal(null);
+        secureSessionStorage.remove('signingIn');
+      }
+      setInitialAuthChecked(true);
+    }
+  }, [user, isLoading, view, initialAuthChecked]);
 
   // SECURITY FIX: Handle auth requirement from subscription attempts
   useEffect(() => {
@@ -66,13 +81,23 @@ const App = () => {
     setActiveModal(null);
   }, []);
 
+  const handleSignInSuccess = useCallback(() => {
+    setActiveModal(null);
+    setView('app'); // Redirect to main app after successful sign-in
+  }, []);
+
+  const handleShowSignInModal = useCallback(() => {
+    secureSessionStorage.set('signingIn', 'true');
+    setActiveModal('signIn');
+  }, []);
+
   const renderModal = () => {
     if (!activeModal) return null;
     switch(activeModal) {
       case 'signIn':
-        return <SignIn onClose={handleCloseModal} onSwitchToSignUp={() => handleShowModal('signUp')} />;
+        return <SignIn onClose={handleCloseModal} onSwitchToSignUp={() => handleShowModal('signUp')} onSignInSuccess={handleSignInSuccess} />;
       case 'signUp':
-        return <SignUp onClose={handleCloseModal} onSwitchToSignIn={() => handleShowModal('signIn')} />;
+        return <SignUp onClose={handleCloseModal} onSwitchToSignIn={handleShowSignInModal} />;
       case 'profile':
         return user ? <Profile onClose={handleCloseModal} /> : null;
       case 'settings':
@@ -90,7 +115,7 @@ const App = () => {
         <TrialTimer onSignIn={() => handleShowModal('signIn')} />
         <ToastContainer />
         {view === 'landing' ? (
-          <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} />
+          <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} onShowSignIn={handleShowSignInModal} />
         ) : (
           <TypingApp 
             onGoToLanding={handleGoToLanding} 
