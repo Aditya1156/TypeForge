@@ -1,0 +1,159 @@
+import { useAuth } from '../context/AuthContext';
+import { useTimer } from '../context/TimerContext';
+import PremiumBadge from './PremiumBadge';
+import type { ModalType } from '../types';
+
+interface AppHeaderProps {
+  onShowModal: (modal: ModalType) => void;
+}
+
+const AppHeader = ({ onShowModal }: AppHeaderProps) => {
+  const { user } = useAuth();
+  const { timerStats } = useTimer();
+
+  // Calculate session limit based on subscription
+  const getSessionInfo = () => {
+    if (!user || user.uid === 'guest') {
+      return { used: 0, limit: 3, isLimited: true };
+    }
+
+    const tier = user.subscription?.tier || 'free';
+    const used = user.subscription?.sessionsUsed || 0;
+    
+    switch (tier) {
+      case 'premium':
+      case 'pro':
+        return { used, limit: null, isLimited: false };
+      default:
+        return { used, limit: 3, isLimited: true };
+    }
+  };
+
+  const sessionInfo = getSessionInfo();
+  const isSessionLimitReached = sessionInfo.isLimited && sessionInfo.used >= (sessionInfo.limit || 0);
+
+  const formatTotalTime = (seconds: number) => {
+    if (seconds < 3600) {
+      const minutes = Math.floor(seconds / 60);
+      return `${minutes}m`;
+    } else {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
+  // Get today's session count (we'll use the daily sessions from subscription)
+  const todaySessionCount = sessionInfo.used;
+
+  return (
+    <header className="w-full bg-secondary/30 backdrop-blur-sm border-b border-border-primary">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Left side - User Profile */}
+          <button 
+            onClick={() => onShowModal('profile')}
+            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-300 group"
+            title="View Profile"
+          >
+            <div className="w-10 h-10 bg-gradient-to-r from-accent to-accent/80 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="flex flex-col items-start">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-text-primary">
+                  {user?.name || user?.email?.split('@')[0] || 'Guest'}
+                </span>
+                {user && user.uid !== 'guest' && (
+                  <PremiumBadge tier={user.subscription?.tier || 'free'} size="sm" />
+                )}
+              </div>
+              <span className="text-xs text-text-secondary">Click to view profile</span>
+            </div>
+          </button>
+
+          {/* Center - Time Tracking */}
+          <div className="hidden md:flex items-center space-x-6">
+            <div className="flex items-center space-x-2 px-3 py-2 bg-tertiary/50 rounded-lg">
+              <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-sm text-text-secondary">Total Time:</span>
+              <span className="font-mono text-accent font-medium">
+                {formatTotalTime(timerStats.totalTimeSpent)}
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-2 px-3 py-2 bg-tertiary/50 rounded-lg">
+              <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className="text-sm text-text-secondary">Sessions:</span>
+              <span className="font-mono text-accent font-medium">
+                {todaySessionCount}
+              </span>
+            </div>
+          </div>
+
+          {/* Right side - Session Limits / Upgrade */}
+          <div className="flex items-center space-x-3">
+            {/* Mobile time stats */}
+            <div className="md:hidden flex items-center space-x-2 px-2 py-1 bg-tertiary/50 rounded text-xs">
+              <span className="text-text-secondary">{formatTotalTime(timerStats.totalTimeSpent)}</span>
+              <span className="text-text-secondary">•</span>
+              <span className="text-text-secondary">{todaySessionCount} sessions</span>
+            </div>
+
+            {/* Session Limit Indicator */}
+            {sessionInfo.isLimited && (
+              <div className="flex items-center space-x-2">
+                <div className={`px-3 py-2 rounded-lg border ${
+                  isSessionLimitReached 
+                    ? 'bg-danger/10 border-danger/30 text-danger' 
+                    : sessionInfo.used >= 2 
+                    ? 'bg-warning/10 border-warning/30 text-warning' 
+                    : 'bg-tertiary/50 border-border-primary text-text-secondary'
+                }`}>
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      {sessionInfo.used}/{sessionInfo.limit} sessions
+                    </span>
+                  </div>
+                  {isSessionLimitReached && (
+                    <div className="text-xs mt-1">Daily limit reached</div>
+                  )}
+                </div>
+
+                {(isSessionLimitReached || sessionInfo.used >= 2) && (
+                  <button
+                    onClick={() => onShowModal('upgrade')}
+                    className="px-4 py-2 bg-gradient-to-r from-accent to-accent/80 text-primary rounded-lg hover:from-accent/90 hover:to-accent/70 transition-all duration-300 hover:scale-105 text-sm font-medium"
+                  >
+                    Upgrade
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Premium Users - Just show unlimited indicator */}
+            {!sessionInfo.isLimited && (
+              <div className="flex items-center space-x-2 px-3 py-2 bg-accent/10 border border-accent/30 rounded-lg">
+                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-accent font-medium">Unlimited</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default AppHeader;
