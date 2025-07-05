@@ -66,7 +66,12 @@ const LessonSelector = ({ chapters, onSelectLesson, onSelectDrill, onSelectRando
           <span className="text-accent">Lessons</span>
         </nav>
         <h1 className="text-4xl sm:text-5xl font-bold text-text-primary">
-          Type<span className="text-accent">Forge</span>
+          <button 
+            onClick={onBackToHome}
+            className="hover:scale-110 transition-transform cursor-pointer"
+          >
+            Type<span className="text-accent">Forge</span>
+          </button>
         </h1>
         <p className="text-text-secondary mt-2">Craft your keystrokes. Forge your speed.</p>
       </header>

@@ -1,7 +1,9 @@
-import React from 'react';
 import Header from './Header';
 import Hero from './Hero';
 import Features from './Features';
+import Testimonials from './Testimonials';
+import CallToAction from './CallToAction';
+import Pricing from './Pricing';
 import Footer from './Footer';
 import type { ModalType } from '../../types';
 
@@ -13,12 +15,15 @@ interface LandingPageProps {
 const LandingPage = ({ onStartTyping, onShowModal }: LandingPageProps) => {
   return (
     <div className="font-sans bg-primary">
-      <Header onShowModal={onShowModal} />
+      <Header onShowModal={onShowModal} onStartTyping={onStartTyping} />
       <main>
         <Hero onStartTyping={onStartTyping} />
         <Features />
+        <Testimonials />
+        <CallToAction onStartTyping={onStartTyping} />
+        <Pricing onStartTyping={onStartTyping} />
       </main>
-      <Footer />
+      <Footer onStartTyping={onStartTyping} />
     </div>
   );
 };

@@ -37,9 +37,12 @@ const AppSidebar = ({ isOpen, onClose, onGoToHome, onShowModal, onNavigate, acti
 
   return (
     <aside className={`fixed top-0 left-0 h-full w-64 bg-secondary border-r border-border-primary flex flex-col p-4 z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="text-2xl font-bold text-text-primary mb-8 px-2">
+      <button 
+        onClick={() => handleAction(onGoToHome)}
+        className="text-2xl font-bold text-text-primary mb-8 px-2 hover:scale-110 transition-transform cursor-pointer"
+      >
         Type<span className="text-accent">Forge</span>
-      </div>
+      </button>
       
       <nav className="flex flex-col gap-2">
         <button 

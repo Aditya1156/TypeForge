@@ -1,44 +1,304 @@
-import React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import type { ModalType } from '../../types';
+import { useSettings } from '../../context/SettingsContext';
+import type { ModalType, Theme } from '../../types';
 
 interface HeaderProps {
   onShowModal: (modal: ModalType) => void;
+  onStartTyping: () => void;
 }
 
-const Header = ({ onShowModal }: HeaderProps) => {
+const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
   const { user, isLoading } = useAuth();
+  const { theme, setTheme } = useSettings();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
+  const themeDropdownRef = useRef<HTMLDivElement>(null);
+
+  const themes: { value: Theme; label: string; icon: string }[] = [
+    { value: 'dark', label: 'Dark', icon: '🌙' },
+    { value: 'light', label: 'Light', icon: '☀️' },
+    { value: 'hacker', label: 'Hacker', icon: '💚' },
+    { value: 'ocean', label: 'Ocean', icon: '🌊' },
+    { value: 'sunset', label: 'Sunset', icon: '🌅' },
+    { value: 'forest', label: 'Forest', icon: '🌲' }
+  ];
+
+  // Close theme dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(event.target as Node)) {
+        setIsThemeDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    setIsMobileMenuOpen(false); // Close mobile menu after navigation
+    setIsThemeDropdownOpen(false); // Close theme dropdown too
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    });
+  };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-20 p-4 sm:p-6">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="text-2xl font-bold text-text-primary">
-          Type<span className="text-accent">Forge</span>
-        </div>
-        <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-text-secondary hover:text-accent transition-colors">Features</a>
-          <a href="#" className="text-text-secondary hover:text-accent transition-colors">Pricing</a>
-          <a href="#" className="text-text-secondary hover:text-accent transition-colors">Contact</a>
-        </nav>
-        <div className="flex items-center space-x-4">
-          {isLoading ? (
-            <div className="h-9 w-36 bg-tertiary/50 animate-pulse rounded-md"></div>
-          ) : user ? (
-            <button
-              onClick={() => onShowModal('profile')}
-              className="px-5 py-2 font-semibold text-text-primary bg-tertiary rounded-md hover:bg-tertiary/70 transition-colors"
+    <>
+      <header className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-primary/85 via-primary/70 to-primary/85 backdrop-blur-lg border-b border-white/5 shadow-xl">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex justify-between items-center">
+            <button 
+              onClick={scrollToTop}
+              className="text-2xl sm:text-3xl font-bold text-text-primary hover:scale-110 transition-all duration-300 cursor-pointer group"
             >
-              Profile
+              <span className="drop-shadow-lg group-hover:drop-shadow-2xl transition-all duration-300">
+                Type<span className="text-accent bg-gradient-to-r from-accent via-accent/90 to-accent/80 bg-clip-text text-transparent">Forge</span>
+              </span>
             </button>
-          ) : (
-            <>
-              <button onClick={() => onShowModal('signIn')} className="hidden sm:block text-text-primary hover:text-white transition-colors">Sign In</button>
-              <button onClick={() => onShowModal('signUp')} className="px-5 py-2 font-semibold text-primary bg-accent rounded-md hover:bg-accent/80 transition-colors">Sign Up</button>
-            </>
-          )}
+          
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <button 
+                onClick={() => scrollToSection('features')} 
+                className="relative text-text-secondary hover:text-accent transition-all duration-300 cursor-pointer group px-3 py-2 rounded-md hover:bg-white/5"
+              >
+                <span className="relative z-10">Features</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/10 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
+              </button>
+              <button 
+                onClick={() => scrollToSection('pricing')} 
+                className="relative text-text-secondary hover:text-accent transition-all duration-300 cursor-pointer group px-3 py-2 rounded-md hover:bg-white/5"
+              >
+                <span className="relative z-10">Pricing</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/10 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
+              </button>
+              <button 
+                onClick={() => scrollToSection('contact')} 
+                className="relative text-text-secondary hover:text-accent transition-all duration-300 cursor-pointer group px-3 py-2 rounded-md hover:bg-white/5"
+              >
+                <span className="relative z-10">Contact</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/10 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
+              </button>
+              
+              {/* Theme Selector */}
+              <div className="relative" ref={themeDropdownRef}>
+                <button
+                  onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
+                  className="relative text-text-secondary hover:text-accent transition-all duration-300 cursor-pointer group px-3 py-2 rounded-md hover:bg-white/5 flex items-center space-x-1"
+                >
+                  <span className="text-lg">{themes.find(t => t.value === theme)?.icon}</span>
+                  <span className="relative z-10">Theme</span>
+                  <svg className={`w-4 h-4 transition-transform duration-200 ${isThemeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/10 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
+                </button>
+                
+                {/* Theme Dropdown */}
+                {isThemeDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-primary/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-xl z-50">
+                    <div className="p-2">
+                      {themes.map((themeOption) => (
+                        <button
+                          key={themeOption.value}
+                          onClick={() => {
+                            setTheme(themeOption.value);
+                            setIsThemeDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-all duration-200 ${
+                            theme === themeOption.value 
+                              ? 'bg-accent/20 text-accent' 
+                              : 'text-text-secondary hover:text-accent hover:bg-white/10'
+                          }`}
+                        >
+                          <span className="text-lg">{themeOption.icon}</span>
+                          <span>{themeOption.label}</span>
+                          {theme === themeOption.value && (
+                            <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </nav>
+
+          {/* Desktop Auth Section */}
+          <div className="hidden md:flex items-center space-x-3">
+            {isLoading ? (
+              <div className="h-10 w-32 bg-white/10 animate-pulse rounded-lg backdrop-blur-sm"></div>
+            ) : user ? (
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => onShowModal('profile')}
+                  className="px-5 py-2 font-medium text-text-primary bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 hover:scale-105 transition-all duration-300 border border-white/20 shadow-md"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={onStartTyping}
+                  className="px-5 py-2 font-semibold text-primary bg-gradient-to-r from-accent to-accent/80 rounded-lg hover:from-accent/90 hover:to-accent/70 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Dashboard
+                </button>
+              </div>
+            ) : (
+              <>
+                <button 
+                  onClick={() => onShowModal('signIn')} 
+                  className="px-4 py-2 font-medium text-text-primary hover:text-accent transition-all duration-300 hover:bg-white/5 rounded-md"
+                >
+                  Sign In
+                </button>
+                <button 
+                  onClick={() => onShowModal('signUp')} 
+                  className="px-5 py-2 font-semibold text-primary bg-gradient-to-r from-accent to-accent/80 rounded-lg hover:from-accent/90 hover:to-accent/70 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+              setIsThemeDropdownOpen(false); // Close theme dropdown when opening mobile menu
+            }}
+            className="md:hidden text-text-primary hover:text-accent transition-all duration-300 p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-accent/50"
+            aria-label="Toggle mobile menu"
+          >
+            <svg className="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
-    </header>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-30 md:hidden animate-in fade-in duration-300">
+          <div className="fixed inset-0 bg-gradient-to-br from-primary/95 via-primary/90 to-secondary/95 backdrop-blur-lg">
+            <div className="flex flex-col items-center justify-center min-h-screen space-y-8 p-8">
+              <div className="space-y-6 text-center">
+                <button 
+                  onClick={() => scrollToSection('features')} 
+                  className="block text-2xl text-text-secondary hover:text-accent transition-all duration-300 hover:scale-110 py-3 px-6 rounded-lg hover:bg-white/10"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={() => scrollToSection('pricing')} 
+                  className="block text-2xl text-text-secondary hover:text-accent transition-all duration-300 hover:scale-110 py-3 px-6 rounded-lg hover:bg-white/10"
+                >
+                  Pricing
+                </button>
+                <button 
+                  onClick={() => scrollToSection('contact')} 
+                  className="block text-2xl text-text-secondary hover:text-accent transition-all duration-300 hover:scale-110 py-3 px-6 rounded-lg hover:bg-white/10"
+                >
+                  Contact
+                </button>
+                
+                {/* Mobile Theme Selector */}
+                <div className="pt-4">
+                  <h3 className="text-lg text-text-secondary mb-4">Choose Theme</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {themes.map((themeOption) => (
+                      <button
+                        key={themeOption.value}
+                        onClick={() => {
+                          setTheme(themeOption.value);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all duration-300 ${
+                          theme === themeOption.value 
+                            ? 'bg-accent/20 text-accent border border-accent/50' 
+                            : 'text-text-secondary hover:text-accent hover:bg-white/10 border border-white/10'
+                        }`}
+                      >
+                        <span className="text-lg">{themeOption.icon}</span>
+                        <span className="text-sm font-medium">{themeOption.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center space-y-4 pt-8">
+                {isLoading ? (
+                  <div className="h-12 w-32 bg-white/10 animate-pulse rounded-lg backdrop-blur-sm"></div>
+                ) : user ? (
+                  <div className="flex flex-col items-center space-y-4">
+                    <button
+                      onClick={() => {
+                        onShowModal('profile');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="px-6 py-3 font-medium text-text-primary bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 hover:scale-105 transition-all duration-300 border border-white/20 shadow-lg"
+                    >
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        onStartTyping();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="px-8 py-3 font-semibold text-primary bg-gradient-to-r from-accent to-accent/80 rounded-lg hover:from-accent/90 hover:to-accent/70 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Dashboard
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => {
+                        onShowModal('signIn');
+                        setIsMobileMenuOpen(false);
+                      }} 
+                      className="text-xl text-text-primary hover:text-accent transition-all duration-300 py-3 px-6 rounded-lg hover:bg-white/10"
+                    >
+                      Sign In
+                    </button>
+                    <button 
+                      onClick={() => {
+                        onShowModal('signUp');
+                        setIsMobileMenuOpen(false);
+                      }} 
+                      className="px-8 py-3 font-semibold text-primary bg-gradient-to-r from-accent to-accent/80 rounded-lg hover:from-accent/90 hover:to-accent/70 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
