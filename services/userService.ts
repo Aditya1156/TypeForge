@@ -325,4 +325,33 @@ export const userService = {
       };
     }
   },
+
+  /**
+   * Get session information for debugging/testing
+   */
+  async getSessionInfo(uid: string): Promise<any> {
+    try {
+      const doc = await db.collection('sessions').doc(uid).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (error) {
+      console.warn('Error getting session info:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Force end all sessions for a user (admin function)
+   */
+  async forceEndAllSessions(uid: string): Promise<void> {
+    try {
+      await db.collection('sessions').doc(uid).delete();
+      console.log('All sessions ended for user:', uid);
+    } catch (error) {
+      console.error('Error ending all sessions:', error);
+      throw new Error('Failed to end sessions');
+    }
+  },
 };

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { playSound } from '../utils/helpers';
 import PremiumGuard from './PremiumGuard';
+import SessionManagerTest from './SessionManagerTest';
 import type { Theme, CaretStyle } from '../types';
 
 interface SettingsProps {
@@ -207,6 +208,13 @@ const Settings = ({ onClose, onUpgrade }: SettingsProps) => {
               </div>
             </SettingRow>
           </div>
+
+          {/* Development/Testing Section */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="space-y-4">
+              <SessionManagerTest />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import { auth } from '../firebaseConfig';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
+import { sessionService } from '../services/sessionService';
 import type { User, SubscriptionTier } from '../types';
 import { useToast } from './ToastContext';
 import { secureSessionStorage } from '../utils/security';
@@ -79,6 +80,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           setUser(userData);
 
+          // Start session management for authenticated users
+          try {
+            await sessionService.startSession(userData.uid);
+            sessionService.initializeActivityTracking(userData.uid);
+          } catch (sessionError) {
+            console.warn('Failed to start session management:', sessionError);
+            // Don't prevent login due to session management issues
+          }
+
           // Show success message for new users (both Google and email/password)
           const wasSigningIn = secureSessionStorage.get('signingIn');
           if (wasSigningIn) {
@@ -110,6 +120,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(basicUserData);
         }
       } else {
+        // End session when user signs out
+        if (sessionService.currentSessionId) {
+          try {
+            // We don't know the userId here, so just clean up locally
+            sessionService.stopSessionMonitoring();
+            sessionService.currentSessionId = null;
+          } catch (error) {
+            console.warn('Error cleaning up session:', error);
+          }
+        }
+
         // Set a guest user with SAME restrictions as free signed-up users
         setUser({
           uid: 'guest',
@@ -151,7 +172,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       addToast(error.message || 'Failed to sign in with Google.', 'error');
     });
 
-    return () => unsubscribe();
+    // Listen for session conflicts
+    const handleSessionConflict = (event: CustomEvent) => {
+      addToast(event.detail.message, event.detail.type);
+    };
+
+    window.addEventListener('sessionConflict', handleSessionConflict as EventListener);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('sessionConflict', handleSessionConflict as EventListener);
+    };
   }, [addToast]);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -193,10 +224,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [addToast]);
 
   const signOut = useCallback(() => {
+    const currentUserId = user?.uid;
+    
+    // End session before signing out
+    if (currentUserId && currentUserId !== 'guest') {
+      sessionService.endSession(currentUserId).catch(error => {
+        console.warn('Error ending session during signout:', error);
+      });
+    }
+    
     authService.signOut().then(() => {
         addToast('You have been signed out.', 'info');
     });
-  }, [addToast]);
+  }, [addToast, user]);
 
   const updateProfile = useCallback(async (name: string) => {
     try {
