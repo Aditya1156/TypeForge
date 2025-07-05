@@ -18,6 +18,15 @@ interface AuthContextType {
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   upgradeSubscription: (tier: SubscriptionTier, paymentMethod?: string) => Promise<void>;
   redeemGiftCode: (code: string) => Promise<SubscriptionTier>;
+  // Device conflict management
+  isDeviceConflictModalOpen: boolean;
+  deviceConflictData: {
+    existingSession: any;
+    userEmail: string;
+    userId: string;
+  } | null;
+  resolveDeviceConflict: (removeOtherDevice: boolean) => Promise<void>;
+  cancelDeviceConflict: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +34,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeviceConflictModalOpen, setIsDeviceConflictModalOpen] = useState(false);
+  const [deviceConflictData, setDeviceConflictData] = useState<{
+    existingSession: any;
+    userEmail: string;
+    userId: string;
+  } | null>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -82,8 +97,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           // Start session management for authenticated users
           try {
-            await sessionService.startSession(userData.uid);
-            sessionService.initializeActivityTracking(userData.uid);
+            const sessionResult = await sessionService.startSessionWithConflictCheck(userData.uid);
+            
+            if (sessionResult.existingSession) {
+              // There's an existing session - dispatch event for conflict resolution
+              window.dispatchEvent(new CustomEvent('deviceConflict', {
+                detail: {
+                  existingSession: sessionResult.existingSession,
+                  userEmail: userData.email || 'Unknown',
+                  userId: userData.uid
+                }
+              }));
+              
+              // Don't complete the sign-in process yet
+              return;
+            } else {
+              // Normal session start
+              sessionService.initializeActivityTracking(userData.uid);
+            }
           } catch (sessionError) {
             console.warn('Failed to start session management:', sessionError);
             // Don't prevent login due to session management issues
@@ -172,16 +203,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       addToast(error.message || 'Failed to sign in with Google.', 'error');
     });
 
-    // Listen for session conflicts
+    // Listen for session conflicts and device conflicts
     const handleSessionConflict = (event: CustomEvent) => {
       addToast(event.detail.message, event.detail.type);
     };
 
+    const handleDeviceConflict = (event: CustomEvent) => {
+      const { existingSession, userEmail, userId } = event.detail;
+      setDeviceConflictData({ existingSession, userEmail, userId });
+      setIsDeviceConflictModalOpen(true);
+    };
+
     window.addEventListener('sessionConflict', handleSessionConflict as EventListener);
+    window.addEventListener('deviceConflict', handleDeviceConflict as EventListener);
 
     return () => {
       unsubscribe();
       window.removeEventListener('sessionConflict', handleSessionConflict as EventListener);
+      window.removeEventListener('deviceConflict', handleDeviceConflict as EventListener);
     };
   }, [addToast]);
 
@@ -395,7 +434,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, retryPendingSubscriptionUpdate]);
 
-  const value = { user, isLoading, signIn, signUp, signOut, signInWithGoogle, updateProfile, updatePassword, upgradeSubscription, redeemGiftCode };
+  const resolveDeviceConflict = useCallback(async (removeOtherDevice: boolean) => {
+    if (!deviceConflictData) return;
+
+    try {
+      if (removeOtherDevice) {
+        // Force remove the existing session
+        await sessionService.forceRemoveSession(deviceConflictData.userId);
+        
+        // Start a new session for the current user
+        await sessionService.startSession(deviceConflictData.userId);
+        
+        addToast('Other device signed out. Welcome back!', 'success');
+      }
+      
+      // Close the conflict modal
+      setIsDeviceConflictModalOpen(false);
+      setDeviceConflictData(null);
+      
+      // If we removed the other device, complete the sign-in
+      if (removeOtherDevice) {
+        // The user should already be set from the auth state change
+        window.location.reload(); // Refresh to complete the process
+      }
+    } catch (error) {
+      console.error('Error resolving device conflict:', error);
+      addToast('Failed to resolve device conflict. Please try again.', 'error');
+    }
+  }, [deviceConflictData, addToast]);
+
+  const cancelDeviceConflict = useCallback(() => {
+    setIsDeviceConflictModalOpen(false);
+    setDeviceConflictData(null);
+    // Could trigger sign-out if needed
+    addToast('Sign-in cancelled.', 'info');
+  }, [addToast]);
+
+  const value = { user, isLoading, signIn, signUp, signOut, signInWithGoogle, updateProfile, updatePassword, upgradeSubscription, redeemGiftCode, isDeviceConflictModalOpen, deviceConflictData, resolveDeviceConflict, cancelDeviceConflict };
 
   return (
     <AuthContext.Provider value={value}>

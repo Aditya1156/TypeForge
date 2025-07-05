@@ -4,6 +4,7 @@ import TypingApp from './TypingApp';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
+import DeviceConflictModal from './components/DeviceConflictModal';
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
 import { useToast } from './context/ToastContext';
@@ -22,7 +23,14 @@ const App = () => {
   const [view, setView] = useState<'landing' | 'app'>('landing');
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
   const [initialAuthChecked, setInitialAuthChecked] = useState(false);
-  const { user, isLoading } = useAuth();
+  const { 
+    user, 
+    isLoading, 
+    isDeviceConflictModalOpen, 
+    deviceConflictData, 
+    resolveDeviceConflict, 
+    cancelDeviceConflict 
+  } = useAuth();
   const { theme } = useSettings();
   const { addToast } = useToast();
 
@@ -161,6 +169,16 @@ const App = () => {
     <ErrorBoundary>
       <TimerProvider>
         <ToastContainer />
+        
+        {/* Device Conflict Modal */}
+        <DeviceConflictModal
+          isOpen={isDeviceConflictModalOpen}
+          activeSession={deviceConflictData?.existingSession || null}
+          userEmail={deviceConflictData?.userEmail || ''}
+          onRemoveOtherDevice={() => resolveDeviceConflict(true)}
+          onCancel={cancelDeviceConflict}
+        />
+        
         {view === 'landing' ? (
           <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} onShowSignIn={handleShowSignInModal} />
         ) : (

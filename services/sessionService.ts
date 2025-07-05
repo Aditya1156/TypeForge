@@ -190,6 +190,61 @@ export const sessionService = {
   },
 
   /**
+   * Check if there's an existing active session before starting a new one
+   */
+  async checkForExistingSession(userId: string): Promise<SessionData | null> {
+    try {
+      const doc = await db.collection('sessions').doc(userId).get();
+      if (doc.exists) {
+        const data = doc.data();
+        return data?.activeSession as SessionData || null;
+      }
+      return null;
+    } catch (error) {
+      console.warn('Error checking for existing session:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Force remove an existing session (for device conflict resolution)
+   */
+  async forceRemoveSession(userId: string): Promise<void> {
+    try {
+      await db.collection('sessions').doc(userId).delete();
+      console.log('Forced session removal for user:', userId);
+    } catch (error) {
+      console.error('Error forcing session removal:', error);
+      throw new Error('Failed to remove existing session');
+    }
+  },
+
+  /**
+   * Start a new session with conflict resolution
+   */
+  async startSessionWithConflictCheck(userId: string): Promise<{ sessionId: string; existingSession?: SessionData }> {
+    try {
+      // Check for existing session first
+      const existingSession = await this.checkForExistingSession(userId);
+      
+      if (existingSession) {
+        // Return existing session info without creating new session
+        return { 
+          sessionId: '', 
+          existingSession 
+        };
+      }
+
+      // No existing session, proceed normally
+      const sessionId = await this.startSession(userId);
+      return { sessionId };
+    } catch (error) {
+      console.error('Error starting session with conflict check:', error);
+      throw new Error('Failed to start session with conflict check');
+    }
+  },
+
+  /**
    * Initialize session activity tracking
    */
   initializeActivityTracking(userId: string): void {
