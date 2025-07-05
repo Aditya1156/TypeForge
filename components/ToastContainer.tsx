@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useToast } from '../context/ToastContext';
 import Toast from './Toast';
 import type { ToastMessage } from '../types';

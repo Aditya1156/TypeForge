@@ -1,13 +1,18 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { playSound } from '../utils/helpers';
+import PremiumGuard from './PremiumGuard';
 import type { Theme, CaretStyle } from '../types';
 
 interface SettingsProps {
   onClose: () => void;
+  onUpgrade?: () => void;
 }
 
-const Settings = ({ onClose }: SettingsProps) => {
+const Settings = ({ onClose, onUpgrade }: SettingsProps) => {
+  const { user } = useAuth();
+  const userTier = user?.subscription?.tier || 'free';
   const { 
     isSoundEnabled, 
     toggleSound,
@@ -36,6 +41,18 @@ const Settings = ({ onClose }: SettingsProps) => {
     }
   };
 
+  const getThemePreview = (themeType: Theme) => {
+    const previews = {
+      dark: 'bg-gradient-to-r from-gray-900 to-gray-800',
+      light: 'bg-gradient-to-r from-gray-100 to-white',
+      hacker: 'bg-gradient-to-r from-green-900 to-green-800',
+      ocean: 'bg-gradient-to-r from-blue-900 to-blue-800',
+      sunset: 'bg-gradient-to-r from-orange-900 to-pink-800',
+      forest: 'bg-gradient-to-r from-green-900 to-emerald-800'
+    };
+    return previews[themeType] || 'bg-gradient-to-r from-gray-500 to-gray-600';
+  };
+
   return (
     <div 
       className="fixed inset-0 bg-primary/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
@@ -57,17 +74,85 @@ const Settings = ({ onClose }: SettingsProps) => {
           <div className="space-y-4">
             <SettingRow label="Theme">
               <div className="w-full">
-                <p className="text-sm text-text-secondary mb-3">Choose your preferred color scheme</p>
-                <div className="grid grid-cols-1 gap-2">
-                  {(['dark', 'light', 'hacker', 'ocean', 'sunset', 'forest'] as Theme[]).map(t => (
-                    <button 
-                      key={t} 
-                      onClick={() => setTheme(t)} 
-                      className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${theme === t ? 'bg-accent text-slate-900' : 'bg-tertiary text-text-primary hover:bg-tertiary/50'}`}
+                <p className="text-sm text-text-secondary mb-4">Choose your preferred color scheme</p>
+                
+                {/* Free themes section */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Free Themes</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(['dark', 'light'] as Theme[]).map(t => (
+                      <button 
+                        key={t} 
+                        onClick={() => setTheme(t)} 
+                        className={`group relative px-4 py-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                          theme === t 
+                            ? 'bg-accent text-primary shadow-lg ring-2 ring-accent/50' 
+                            : 'bg-tertiary text-text-primary hover:bg-tertiary/70 hover:scale-105'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-6 h-6 rounded-full ${getThemePreview(t)} border-2 border-border-primary shadow-sm`}></div>
+                          <span>{getThemeDescription(t)}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Premium themes section */}
+                <div>
+                  <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+                    Premium Themes 
+                    <span className="text-accent">✨</span>
+                  </h4>
+                  {userTier === 'free' ? (
+                    <PremiumGuard
+                      feature="theme"
+                      requiredTier="premium"
+                      themeCount={4}
+                      onUpgradeClick={onUpgrade}
+                      showBlurred={true}
+                      overlayClassName="rounded-lg"
                     >
-                      {getThemeDescription(t)}
-                    </button>
-                  ))}
+                      <div className="grid grid-cols-2 gap-3">
+                        {(['hacker', 'ocean', 'sunset', 'forest'] as Theme[]).map(t => (
+                          <button 
+                            key={t} 
+                            onClick={() => setTheme(t)} 
+                            className={`group relative px-4 py-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                              theme === t 
+                                ? 'bg-accent text-primary shadow-lg ring-2 ring-accent/50' 
+                                : 'bg-tertiary text-text-primary hover:bg-tertiary/70 hover:scale-105'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-6 h-6 rounded-full ${getThemePreview(t)} border-2 border-border-primary shadow-sm`}></div>
+                              <span>{getThemeDescription(t)}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </PremiumGuard>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {(['hacker', 'ocean', 'sunset', 'forest'] as Theme[]).map(t => (
+                        <button 
+                          key={t} 
+                          onClick={() => setTheme(t)} 
+                          className={`group relative px-4 py-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                            theme === t 
+                              ? 'bg-accent text-primary shadow-lg ring-2 ring-accent/50' 
+                              : 'bg-tertiary text-text-primary hover:bg-tertiary/70 hover:scale-105'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-full ${getThemePreview(t)} border-2 border-border-primary shadow-sm`}></div>
+                            <span>{getThemeDescription(t)}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </SettingRow>
@@ -79,7 +164,7 @@ const Settings = ({ onClose }: SettingsProps) => {
                 <p className="text-sm text-text-secondary mb-3">Choose how your cursor appears</p>
                 <div className="flex flex-col gap-2">
                   {(['line', 'block', 'underline'] as CaretStyle[]).map(s => (
-                    <button key={s} onClick={() => setCaretStyle(s)} className={`px-3 py-2 text-sm font-semibold rounded-md capitalize transition-colors ${caretStyle === s ? 'bg-accent text-slate-900' : 'bg-tertiary text-text-primary hover:bg-tertiary/50'}`}>
+                    <button key={s} onClick={() => setCaretStyle(s)} className={`px-3 py-2 text-sm font-semibold rounded-md capitalize transition-colors ${caretStyle === s ? 'bg-accent text-primary' : 'bg-tertiary text-text-primary hover:bg-tertiary/50'}`}>
                       {s}
                     </button>
                   ))}

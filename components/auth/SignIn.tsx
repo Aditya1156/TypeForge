@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../LoadingSpinner';
+import { validateEmail, sanitizeInput, isRateLimited } from '../../utils/security';
 
 interface SignInProps {
   onClose: () => void;
@@ -18,9 +19,30 @@ const SignIn = ({ onClose, onSwitchToSignUp }: SignInProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // SECURITY: Input validation and rate limiting
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPassword = sanitizeInput(password);
+    
+    if (!validateEmail(sanitizedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    
+    if (sanitizedPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    
+    // Rate limiting: max 5 attempts per minute
+    if (isRateLimited('signin', 5, 60000)) {
+      setError('Too many sign-in attempts. Please wait a minute before trying again.');
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      await signIn(email, password);
+      await signIn(sanitizedEmail, sanitizedPassword);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Failed to sign in. Please try again.');
@@ -31,6 +53,13 @@ const SignIn = ({ onClose, onSwitchToSignUp }: SignInProps) => {
 
   const handleGoogleSignIn = () => {
     setError('');
+    
+    // Rate limiting for Google sign-in
+    if (isRateLimited('google-signin', 3, 60000)) {
+      setError('Too many Google sign-in attempts. Please wait a minute before trying again.');
+      return;
+    }
+    
     setIsGoogleLoading(true);
     signInWithGoogle().catch((err) => {
       setError(err.message || 'Failed to start Google Sign-In.');

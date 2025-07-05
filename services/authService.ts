@@ -24,7 +24,26 @@ export const authService = {
         await userCredential.user.updateProfile({ displayName: name });
       }
       const { uid, displayName, email: userEmail } = userCredential.user!;
-      return { uid, name: displayName, email: userEmail };
+      return { 
+        uid, 
+        name: displayName, 
+        email: userEmail,
+        subscription: {
+          tier: 'free',
+          sessionsUsed: 0,
+          lastSessionDate: new Date().toISOString().split('T')[0]
+        },
+        features: {
+          aiCoach: false,
+          advancedAnalytics: false,
+          unlimitedSessions: false,
+          customLessons: false,
+          exportData: false,
+          themesUnlocked: 1,
+          lessonsUnlocked: 5,
+          practiceModesUnlocked: ['keys', 'words']
+        }
+      };
     } catch (error: any) {
       // Map Firebase error codes to more user-friendly messages
       switch (error.code) {
@@ -44,7 +63,26 @@ export const authService = {
     try {
       const userCredential = await auth.signInWithEmailAndPassword(email, password);
       const { uid, displayName, email: userEmail } = userCredential.user!;
-      return { uid, name: displayName, email: userEmail };
+      return { 
+        uid, 
+        name: displayName, 
+        email: userEmail,
+        subscription: {
+          tier: 'free',
+          sessionsUsed: 0,
+          lastSessionDate: new Date().toISOString().split('T')[0]
+        },
+        features: {
+          aiCoach: false,
+          advancedAnalytics: false,
+          unlimitedSessions: false,
+          customLessons: false,
+          exportData: false,
+          themesUnlocked: 1,
+          lessonsUnlocked: 5,
+          practiceModesUnlocked: ['keys', 'words']
+        }
+      };
     } catch (error: any) {
       switch (error.code) {
         case 'auth/user-not-found':

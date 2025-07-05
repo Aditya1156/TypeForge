@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Progress, Lesson } from '../../types';
 import { chapters } from '../../data/lessons';
 import ProgressTick from '../ProgressTick';
@@ -55,22 +55,25 @@ const ProblemAreas = ({ progress, onSelectDrill }: ProblemAreasProps) => {
             <h3 className="text-xl font-bold text-text-primary mb-4">Practice Your Weak Spots</h3>
             <p className="text-sm text-text-secondary mb-4">Here are a few drills where you could improve. Click one to practice!</p>
             <div className="space-y-3">
-                {problemDrills.map(({ lesson, drillIndex, performance }, index) => (
-                    <button
-                        key={index}
-                        onClick={() => onSelectDrill(lesson!, drillIndex)}
-                        className="w-full flex items-center justify-between gap-4 p-4 bg-tertiary rounded-md hover:bg-border-primary transition-colors text-left"
-                    >
-                        <div className="flex-grow">
-                            <p className="font-semibold text-text-primary">{lesson!.name}</p>
-                            <p className="text-xs text-text-secondary">Drill {drillIndex + 1}</p>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm">
-                            <span className="font-semibold text-text-secondary">{performance.wpm} WPM / {performance.accuracy}%</span>
-                            <ProgressTick tier={performance.tier} />
-                        </div>
-                    </button>
-                ))}
+                {problemDrills.filter(drill => drill !== null).map((drill, index) => {
+                    const { lesson, drillIndex, performance } = drill!;
+                    return (
+                        <button
+                            key={index}
+                            onClick={() => onSelectDrill(lesson!, drillIndex)}
+                            className="w-full flex items-center justify-between gap-4 p-4 bg-tertiary rounded-md hover:bg-border-primary transition-colors text-left"
+                        >
+                            <div className="flex-grow">
+                                <p className="font-semibold text-text-primary">{lesson!.name}</p>
+                                <p className="text-xs text-text-secondary">Drill {drillIndex + 1}</p>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm">
+                                <span className="font-semibold text-text-secondary">{performance.wpm} WPM / {performance.accuracy}%</span>
+                                <ProgressTick tier={performance.tier} />
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

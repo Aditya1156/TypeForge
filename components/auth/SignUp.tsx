@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../LoadingSpinner';
+import { validateEmail, validatePassword, sanitizeInput, isRateLimited } from '../../utils/security';
 
 interface SignUpProps {
   onClose: () => void;
@@ -18,14 +19,38 @@ const SignUp = ({ onClose, onSwitchToSignIn }: SignUpProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-        setError("Password must be at least 6 characters long.");
-        return;
-    }
     setError('');
+    
+    // SECURITY: Input validation and sanitization
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPassword = password; // Don't modify password, just validate
+    
+    if (sanitizedName.length < 2) {
+      setError('Name must be at least 2 characters long.');
+      return;
+    }
+    
+    if (!validateEmail(sanitizedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    
+    const passwordValidation = validatePassword(sanitizedPassword);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors[0]);
+      return;
+    }
+    
+    // Rate limiting: max 3 signup attempts per 5 minutes
+    if (isRateLimited('signup', 3, 300000)) {
+      setError('Too many signup attempts. Please wait 5 minutes before trying again.');
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      await signUp(name, email, password);
+      await signUp(sanitizedName, sanitizedEmail, sanitizedPassword);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Failed to sign up. Please try again.');

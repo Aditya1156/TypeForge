@@ -36,7 +36,7 @@ export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMo
             contents: prompt,
         });
 
-        return response.text.trim();
+        return response.text?.trim() || "";
     } catch (error) {
         console.error("Failed to fetch AI custom drill:", error);
         throw new Error("The AI failed to generate a drill. Please try again.");
@@ -71,7 +71,7 @@ export const fetchAiAnalysis = async (errors: ErrorDetail[]): Promise<AiAnalysis
             },
         });
         
-        let jsonStr = response.text.trim();
+        let jsonStr = response.text?.trim() || "";
         const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
         const match = jsonStr.match(fenceRegex);
         if (match && match[2]) {

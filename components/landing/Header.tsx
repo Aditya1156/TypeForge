@@ -1,27 +1,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useGuestTrial } from '../../hooks/useGuestTrial';
+import PremiumBadge from '../PremiumBadge';
 import type { ModalType, Theme } from '../../types';
 
 interface HeaderProps {
   onShowModal: (modal: ModalType) => void;
   onStartTyping: () => void;
+  onShowUpgrade?: () => void;
 }
 
-const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
+const Header = ({ onShowModal, onStartTyping, onShowUpgrade }: HeaderProps) => {
   const { user, isLoading } = useAuth();
   const { theme, setTheme } = useSettings();
+  const { isActive: trialActive } = useGuestTrial();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
 
-  const themes: { value: Theme; label: string; icon: string }[] = [
+  const themes: { value: Theme; label: string; icon: string; premium?: boolean }[] = [
     { value: 'dark', label: 'Dark', icon: '🌙' },
     { value: 'light', label: 'Light', icon: '☀️' },
-    { value: 'hacker', label: 'Hacker', icon: '💚' },
-    { value: 'ocean', label: 'Ocean', icon: '🌊' },
-    { value: 'sunset', label: 'Sunset', icon: '🌅' },
-    { value: 'forest', label: 'Forest', icon: '🌲' }
+    { value: 'hacker', label: 'Hacker', icon: '💚', premium: true },
+    { value: 'ocean', label: 'Ocean', icon: '🌊', premium: true },
+    { value: 'sunset', label: 'Sunset', icon: '🌅', premium: true },
+    { value: 'forest', label: 'Forest', icon: '🌲', premium: true }
   ];
 
   // Close theme dropdown when clicking outside
@@ -57,7 +61,7 @@ const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
 
   return (
     <>
-      <header className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-primary/85 via-primary/70 to-primary/85 backdrop-blur-lg border-b border-white/5 shadow-xl">
+      <header className={`absolute left-0 right-0 z-20 bg-gradient-to-r from-primary/85 via-primary/70 to-primary/85 backdrop-blur-lg border-b border-white/5 shadow-xl ${trialActive ? 'top-10' : 'top-0'}`}>
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex justify-between items-center">
             <button 
@@ -111,28 +115,42 @@ const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
                 {isThemeDropdownOpen && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-primary/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-xl z-50">
                     <div className="p-2">
-                      {themes.map((themeOption) => (
-                        <button
-                          key={themeOption.value}
-                          onClick={() => {
-                            setTheme(themeOption.value);
-                            setIsThemeDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-all duration-200 ${
-                            theme === themeOption.value 
-                              ? 'bg-accent/20 text-accent' 
-                              : 'text-text-secondary hover:text-accent hover:bg-white/10'
-                          }`}
-                        >
-                          <span className="text-lg">{themeOption.icon}</span>
-                          <span>{themeOption.label}</span>
-                          {theme === themeOption.value && (
-                            <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </button>
-                      ))}
+                      {themes.map((themeOption) => {
+                        const isLocked = themeOption.premium && user?.subscription?.tier === 'free';
+                        return (
+                          <button
+                            key={themeOption.value}
+                            onClick={() => {
+                              if (isLocked && onShowUpgrade) {
+                                onShowUpgrade();
+                              } else {
+                                setTheme(themeOption.value);
+                                setIsThemeDropdownOpen(false);
+                              }
+                            }}
+                            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-all duration-200 ${
+                              theme === themeOption.value 
+                                ? 'bg-accent/20 text-accent' 
+                                : isLocked
+                                ? 'text-text-secondary/50 hover:text-text-secondary cursor-pointer'
+                                : 'text-text-secondary hover:text-accent hover:bg-white/10'
+                            }`}
+                          >
+                            <span className="text-lg">{themeOption.icon}</span>
+                            <span>{themeOption.label}</span>
+                            {themeOption.premium && (
+                              <svg className="w-4 h-4 text-accent ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0h-2m9-7V8a5 5 0 00-10 0v3M7 21h10a2 2 0 002-2v-6a2 2 0 00-2-2H7a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                            {theme === themeOption.value && !isLocked && (
+                              <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -145,6 +163,19 @@ const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
               <div className="h-10 w-32 bg-white/10 animate-pulse rounded-lg backdrop-blur-sm"></div>
             ) : user ? (
               <div className="flex items-center space-x-3">
+                {/* Premium Badge */}
+                <PremiumBadge tier={user.subscription?.tier || 'free'} size="sm" />
+                
+                {/* Upgrade Button for Free Users */}
+                {user.subscription?.tier === 'free' && onShowUpgrade && (
+                  <button
+                    onClick={onShowUpgrade}
+                    className="px-4 py-2 font-medium text-accent border border-accent/50 rounded-lg hover:bg-accent hover:text-primary transition-all duration-300"
+                  >
+                    Upgrade
+                  </button>
+                )}
+                
                 <button
                   onClick={() => onShowModal('profile')}
                   className="px-5 py-2 font-medium text-text-primary bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 hover:scale-105 transition-all duration-300 border border-white/20 shadow-md"
@@ -226,23 +257,38 @@ const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
                 <div className="pt-4">
                   <h3 className="text-lg text-text-secondary mb-4">Choose Theme</h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {themes.map((themeOption) => (
-                      <button
-                        key={themeOption.value}
-                        onClick={() => {
-                          setTheme(themeOption.value);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all duration-300 ${
-                          theme === themeOption.value 
-                            ? 'bg-accent/20 text-accent border border-accent/50' 
-                            : 'text-text-secondary hover:text-accent hover:bg-white/10 border border-white/10'
-                        }`}
-                      >
-                        <span className="text-lg">{themeOption.icon}</span>
-                        <span className="text-sm font-medium">{themeOption.label}</span>
-                      </button>
-                    ))}
+                    {themes.map((themeOption) => {
+                      const isLocked = themeOption.premium && user?.subscription?.tier === 'free';
+                      return (
+                        <button
+                          key={themeOption.value}
+                          onClick={() => {
+                            if (isLocked && onShowUpgrade) {
+                              onShowUpgrade();
+                              setIsMobileMenuOpen(false);
+                            } else {
+                              setTheme(themeOption.value);
+                              setIsMobileMenuOpen(false);
+                            }
+                          }}
+                          className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all duration-300 relative ${
+                            theme === themeOption.value 
+                              ? 'bg-accent/20 text-accent border border-accent/50' 
+                              : isLocked
+                              ? 'text-text-secondary/50 hover:text-text-secondary border border-white/5 cursor-pointer'
+                              : 'text-text-secondary hover:text-accent hover:bg-white/10 border border-white/10'
+                          }`}
+                        >
+                          <span className="text-lg">{themeOption.icon}</span>
+                          <span className="text-sm font-medium">{themeOption.label}</span>
+                          {themeOption.premium && (
+                            <svg className="w-3 h-3 text-accent absolute top-1 right-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0h-2m9-7V8a5 5 0 00-10 0v3M7 21h10a2 2 0 002-2v-6a2 2 0 00-2-2H7a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -252,6 +298,22 @@ const Header = ({ onShowModal, onStartTyping }: HeaderProps) => {
                   <div className="h-12 w-32 bg-white/10 animate-pulse rounded-lg backdrop-blur-sm"></div>
                 ) : user ? (
                   <div className="flex flex-col items-center space-y-4">
+                    {/* Mobile Premium Badge */}
+                    <PremiumBadge tier={user.subscription?.tier || 'free'} size="md" />
+                    
+                    {/* Mobile Upgrade Button for Free Users */}
+                    {user.subscription?.tier === 'free' && onShowUpgrade && (
+                      <button
+                        onClick={() => {
+                          onShowUpgrade();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="px-6 py-3 font-medium text-accent border border-accent/50 rounded-lg hover:bg-accent hover:text-primary transition-all duration-300"
+                      >
+                        Upgrade to Premium
+                      </button>
+                    )}
+                    
                     <button
                       onClick={() => {
                         onShowModal('profile');

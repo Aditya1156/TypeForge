@@ -40,13 +40,37 @@ export interface DrillPerformance {
 export type Progress = Record<string, DrillPerformance>;
 
 // Addition for authentication - Aligned with Firebase
+export type SubscriptionTier = 'free' | 'premium' | 'pro';
+
+export interface SubscriptionInfo {
+  tier: SubscriptionTier;
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string for premium/pro
+  trialUsed?: boolean;
+  sessionsUsed?: number; // For free tier session limits
+  lastSessionDate?: string; // YYYY-MM-DD format
+}
+
+export interface PremiumFeatures {
+  aiCoach: boolean;
+  advancedAnalytics: boolean;
+  unlimitedSessions: boolean;
+  customLessons: boolean;
+  exportData: boolean;
+  themesUnlocked: number; // Number of themes unlocked
+  lessonsUnlocked: number; // Number of lessons unlocked
+  practiceModesUnlocked: PracticeMode[]; // Available practice modes
+}
+
 export interface User {
   uid: string;
   name: string | null;
   email: string | null;
+  subscription: SubscriptionInfo;
+  features: PremiumFeatures;
 }
 
-export type ModalType = 'signIn' | 'signUp' | 'profile' | 'settings';
+export type ModalType = 'signIn' | 'signUp' | 'profile' | 'settings' | 'upgrade';
 
 
 // Additions for Toast Notifications

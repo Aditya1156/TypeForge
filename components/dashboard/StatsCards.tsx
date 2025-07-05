@@ -19,22 +19,26 @@ const StatCard = ({
     trend?: 'up' | 'down' | 'neutral';
     icon?: string;
 }) => (
-    <div className="bg-secondary p-6 rounded-lg shadow-md flex flex-col items-center justify-center text-center">
-        <div className="flex items-center space-x-2 mb-2">
+    <div className="bg-secondary p-4 rounded-lg shadow-sm border border-border-primary hover:shadow-md transition-shadow duration-200">
+        <div className="flex items-center justify-between mb-3">
             {icon && <span className="text-2xl">{icon}</span>}
-            <span className="text-4xl font-bold text-accent">{value}{unit}</span>
             {trend && (
-                <span className={`text-sm ${
-                    trend === 'up' ? 'text-green-400' : 
-                    trend === 'down' ? 'text-red-400' : 
-                    'text-text-secondary'
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                    trend === 'up' ? 'bg-success/20 text-success' : 
+                    trend === 'down' ? 'bg-danger/20 text-danger' : 
+                    'bg-border-primary text-text-secondary'
                 }`}>
-                    {trend === 'up' ? '↗️' : trend === 'down' ? '↘️' : '→'}
+                    {trend === 'up' ? '↗️ Up' : trend === 'down' ? '↘️ Down' : '→ Stable'}
                 </span>
             )}
         </div>
-        <span className="text-sm text-text-secondary">{label}</span>
-        {subtitle && <span className="text-xs text-text-secondary mt-1">{subtitle}</span>}
+        <div className="text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-accent mb-1">
+                {value}{unit}
+            </div>
+            <div className="text-sm font-medium text-text-primary mb-1">{label}</div>
+            {subtitle && <div className="text-xs text-text-secondary">{subtitle}</div>}
+        </div>
     </div>
 );
 
@@ -43,11 +47,11 @@ const StatsCards = ({ performanceEntries }: StatsCardsProps) => {
     
     if (totalEntries === 0) {
         return (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard label="Average WPM" value={0} icon="⚡" />
                 <StatCard label="Average Accuracy" value="0%" icon="🎯" />
                 <StatCard label="Personal Best" value={0} unit=" WPM" icon="🏆" />
-                <StatCard label="Drills Mastered" value={0} icon="✅" />
+                <StatCard label="Total Sessions" value={0} icon="📝" />
             </div>
         );
     }
@@ -56,8 +60,6 @@ const StatsCards = ({ performanceEntries }: StatsCardsProps) => {
     const avgAccuracy = Math.round(performanceEntries.reduce((sum, p) => sum + p.accuracy, 0) / totalEntries);
     const bestWpm = Math.max(...performanceEntries.map(p => p.wpm));
     const bestAccuracy = Math.max(...performanceEntries.map(p => p.accuracy));
-    const masteredDrills = performanceEntries.filter(p => p.tier === 'mastered').length;
-    const proficientDrills = performanceEntries.filter(p => p.tier === 'proficient').length;
 
     // Calculate trends (compare last 10 sessions with previous 10)
     const recentSessions = performanceEntries
@@ -92,65 +94,34 @@ const StatsCards = ({ performanceEntries }: StatsCardsProps) => {
     const sessionsPerDay = (totalEntries / Math.max(timeSpan, 1)).toFixed(1);
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <StatCard 
-                    label="Average WPM" 
-                    value={avgWpm} 
-                    icon="⚡"
-                    trend={getWpmTrend()}
-                    subtitle={recentSessions.length > 0 ? `Last session: ${recentSessions[0].wpm} WPM` : undefined}
-                />
-                <StatCard 
-                    label="Average Accuracy" 
-                    value={`${avgAccuracy}%`} 
-                    icon="🎯"
-                    trend={getAccuracyTrend()}
-                    subtitle={`Best: ${bestAccuracy}%`}
-                />
-                <StatCard 
-                    label="Personal Best" 
-                    value={bestWpm} 
-                    unit=" WPM" 
-                    icon="🏆"
-                    subtitle="Highest speed achieved"
-                />
-                <StatCard 
-                    label="Drills Mastered" 
-                    value={masteredDrills} 
-                    icon="✅"
-                    subtitle={`${proficientDrills} proficient`}
-                />
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <StatCard 
-                    label="Total Sessions" 
-                    value={totalEntries} 
-                    icon="📝"
-                    subtitle={`${sessionsPerDay} per day avg`}
-                />
-                <StatCard 
-                    label="Practice Days" 
-                    value={new Set(performanceEntries.map(p => new Date(p.timestamp).toDateString())).size} 
-                    icon="📅"
-                    subtitle={`Over ${timeSpan} days`}
-                />
-                <StatCard 
-                    label="Improvement Rate" 
-                    value={totalEntries > 1 ? Math.round(((bestWpm - (performanceEntries.sort((a, b) => a.timestamp - b.timestamp)[0]?.wpm || 0)) / Math.max(timeSpan, 1))) : 0} 
-                    unit=" WPM/day" 
-                    icon="📈"
-                    subtitle="Average daily growth"
-                />
-                <StatCard 
-                    label="Consistency Score" 
-                    value={totalEntries > 0 ? Math.round(100 - (Math.sqrt(performanceEntries.reduce((sum, p) => sum + Math.pow(p.wpm - avgWpm, 2), 0) / totalEntries))) : 0} 
-                    unit="%" 
-                    icon="🎖️"
-                    subtitle="Lower variance = higher score"
-                />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard 
+                label="Average WPM" 
+                value={avgWpm} 
+                icon="⚡"
+                trend={getWpmTrend()}
+                subtitle={recentSessions.length > 0 ? `Last: ${recentSessions[0].wpm} WPM` : undefined}
+            />
+            <StatCard 
+                label="Accuracy" 
+                value={`${avgAccuracy}%`} 
+                icon="🎯"
+                trend={getAccuracyTrend()}
+                subtitle={`Best: ${bestAccuracy}%`}
+            />
+            <StatCard 
+                label="Personal Best" 
+                value={bestWpm} 
+                unit=" WPM" 
+                icon="🏆"
+                subtitle="Top speed"
+            />
+            <StatCard 
+                label="Total Sessions" 
+                value={totalEntries} 
+                icon="📝"
+                subtitle={`${sessionsPerDay}/day avg`}
+            />
         </div>
     );
 };

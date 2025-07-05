@@ -276,13 +276,13 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
     if (isSessionActive) {
       // Check session limit
       if (timerStats.currentSessionTime >= timerStats.sessionLimit) {
-        console.log('Session limit reached, ending session');
+
         endSession();
       }
       
       // Check daily limit
       if (timerStats.dailyTimeSpent >= timerStats.dailyLimit) {
-        console.log('Daily limit reached, ending session');
+
         endSession();
       }
     }

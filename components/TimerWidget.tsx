@@ -20,9 +20,7 @@ const TimerWidget = ({ compact = false, showGoalSetting = false }: TimerWidgetPr
     getTimeUntilGoal,
     isGoalReached,
     isSessionLimitReached,
-    isDailyLimitReached,
-    getTimeUntilSessionLimit,
-    getTimeUntilDailyLimit
+    isDailyLimitReached
   } = useTimer();
   
   const [showGoalInput, setShowGoalInput] = useState(false);

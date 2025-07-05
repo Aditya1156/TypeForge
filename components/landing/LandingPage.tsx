@@ -13,9 +13,13 @@ interface LandingPageProps {
 }
 
 const LandingPage = ({ onStartTyping, onShowModal }: LandingPageProps) => {
+  const handleShowUpgrade = () => {
+    onShowModal('upgrade');
+  };
+
   return (
     <div className="font-sans bg-primary">
-      <Header onShowModal={onShowModal} onStartTyping={onStartTyping} />
+      <Header onShowModal={onShowModal} onStartTyping={onStartTyping} onShowUpgrade={handleShowUpgrade} />
       <main>
         <Hero onStartTyping={onStartTyping} />
         <Features />

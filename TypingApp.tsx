@@ -15,6 +15,7 @@ import FingerGuideUI from './components/FingerGuideUI';
 import LiveStats from './components/LiveStats';
 import AppSidebar from './components/AppSidebar';
 import Dashboard from './components/dashboard/Dashboard';
+import SessionLimitGuard from './components/SessionLimitGuard';
 import type { AiAnalysis, Lesson, PracticeMode, ModalType } from './types';
 import { calculateAccuracy } from './utils/helpers';
 import { chapters } from './data/lessons';
@@ -32,6 +33,16 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
   
   // Scroll position state to preserve position when navigating back
   const [scrollPositions, setScrollPositions] = useState<{[key: string]: number}>({});
+
+  // Upgrade function for premium features
+  const handleUpgrade = useCallback(() => {
+    onShowModal('upgrade' as ModalType);
+  }, [onShowModal]);
+
+  // Sign in function for guest users
+  const handleSignIn = useCallback(() => {
+    onShowModal('signIn');
+  }, [onShowModal]);
 
   // Save current scroll position
   const saveScrollPosition = (viewName: string) => {
@@ -325,6 +336,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
             isProgressLoaded={isProgressLoaded}
             onResetProgress={resetProgress}
             onBackToHome={onGoToLanding}
+            onUpgrade={handleUpgrade}
           />
         );
       case 'guide':
@@ -352,7 +364,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
                 <span className="text-accent">Dashboard</span>
               </nav>
             </div>
-            <Dashboard progress={progress} isProgressLoaded={isProgressLoaded} onSelectDrill={handleSelectDrill} />
+            <Dashboard progress={progress} isProgressLoaded={isProgressLoaded} onSelectDrill={handleSelectDrill} onUpgrade={handleUpgrade} />
           </div>
         );
       case 'test':
@@ -422,6 +434,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
                     onNextDrill={handleNextDrill}
                     hasNextLesson={hasNextLesson}
                     onNextLesson={handleNextLesson}
+                    onUpgrade={handleUpgrade}
                   />
                 ) : (
                   <TypingTest words={words} typed={typed} totalTyped={totalTyped} caretStyle={caretStyle} />
@@ -430,7 +443,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
 
               {isAiLoading && <LoadingSpinner />}
               {aiError && <p className="text-danger bg-danger/10 p-3 rounded-md">{aiError}</p>}
-              {aiAnalysis && <AiCoachFeedback aiAnalysis={aiAnalysis} onBack={handleBackFromAi} onPracticeDrill={handlePracticeAiDrill} />}
+              {aiAnalysis && <AiCoachFeedback aiAnalysis={aiAnalysis} onBack={handleBackFromAi} onPracticeDrill={handlePracticeAiDrill} onUpgrade={handleUpgrade} />}
             </main>
 
             <footer className="text-center text-text-secondary mt-16 text-sm">
@@ -470,7 +483,9 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
       </button>
 
       <main className="flex-grow flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        {renderContent()}
+        <SessionLimitGuard onUpgrade={handleUpgrade} onSignIn={handleSignIn}>
+          {renderContent()}
+        </SessionLimitGuard>
       </main>
     </div>
   );
