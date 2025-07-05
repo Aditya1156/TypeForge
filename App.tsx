@@ -40,6 +40,14 @@ const App = () => {
     }
   }, [user, isLoading, view, initialAuthChecked]);
 
+  // Handle redirect to landing page after sign-out
+  useEffect(() => {
+    if (!isLoading && (!user || user.uid === 'guest') && view === 'app') {
+      setView('landing');
+      setActiveModal(null);
+    }
+  }, [user, isLoading, view]);
+
   // SECURITY FIX: Handle auth requirement from subscription attempts
   useEffect(() => {
     const handleRequireAuth = (event: CustomEvent) => {

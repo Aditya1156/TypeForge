@@ -1,5 +1,6 @@
 
 import { useAuth } from '../../context/AuthContext';
+import PremiumBadge from '../PremiumBadge';
 
 interface ProfileProps {
   onClose: () => void;
@@ -31,15 +32,44 @@ const Profile = ({ onClose }: ProfileProps) => {
           </button>
         </div>
         
-        <div className="space-y-4 text-text-primary">
+        <div className="space-y-6 text-text-primary">
+          {/* User Avatar and Basic Info */}
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-accent to-accent/80 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-xl font-bold">{user.name || 'User'}</h3>
+                <PremiumBadge tier={user.subscription?.tier || 'free'} size="sm" />
+              </div>
+              <p className="text-text-secondary">{user.email}</p>
+            </div>
+          </div>
+
+          {/* Account Details */}
+          <div className="space-y-3">
             <div className="flex flex-col">
-                <span className="text-sm text-text-secondary">Name</span>
-                <span className="text-lg font-semibold">{user.name}</span>
+              <span className="text-sm text-text-secondary">Subscription</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-semibold capitalize">{user.subscription?.tier || 'Free'}</span>
+                {user.subscription?.endDate && (
+                  <span className="text-xs text-text-secondary">
+                    Until {new Date(user.subscription.endDate).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
             </div>
-             <div className="flex flex-col">
-                <span className="text-sm text-text-secondary">Email</span>
-                <span className="text-lg font-semibold">{user.email}</span>
+            
+            <div className="flex flex-col">
+              <span className="text-sm text-text-secondary">Member Since</span>
+              <span className="text-lg font-semibold">
+                {new Date(user.subscription?.startDate || Date.now()).toLocaleDateString()}
+              </span>
             </div>
+          </div>
         </div>
 
         <button 
