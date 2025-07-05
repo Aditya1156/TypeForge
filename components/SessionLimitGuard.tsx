@@ -35,23 +35,6 @@ const SessionLimitGuard: React.FC<SessionLimitGuardProps> = ({
     return sessionsUsed >= 3;
   };
 
-  const sessionsRemaining = () => {
-    if (!user || user.subscription?.tier !== 'free') {
-      return Infinity;
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const lastSessionDate = user.subscription?.lastSessionDate;
-    const sessionsUsed = user.subscription?.sessionsUsed || 0;
-
-    // Reset sessions if it's a new day
-    if (lastSessionDate !== today) {
-      return 3;
-    }
-
-    return Math.max(0, 3 - sessionsUsed);
-  };
-
   if (!user) {
     // If guest trial has expired, show sign-in prompt
     if (guestTrialExpired) {
@@ -211,40 +194,9 @@ const SessionLimitGuard: React.FC<SessionLimitGuardProps> = ({
     );
   }
 
-  // Show session count for free users
+  // Free users get clean experience - session tracking is handled in AppHeader
   if (user.subscription?.tier === 'free') {
-    const remaining = sessionsRemaining();
-    return (
-      <div className="space-y-4">
-        <div className="bg-tertiary/20 border border-accent/10 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span className="text-sm font-medium text-text-primary">
-                Free Plan: {remaining} sessions remaining today
-              </span>
-            </div>
-            {onUpgrade && (
-              <button
-                onClick={onUpgrade}
-                className="text-xs px-3 py-1 text-accent border border-accent/50 rounded-full hover:bg-accent hover:text-primary transition-all duration-300"
-              >
-                Upgrade
-              </button>
-            )}
-          </div>
-          <div className="mt-2 bg-tertiary rounded-full h-2">
-            <div 
-              className="bg-gradient-to-r from-accent to-accent/80 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((3 - remaining) / 3) * 100}%` }}
-            />
-          </div>
-        </div>
-        {children}
-      </div>
-    );
+    return <>{children}</>;
   }
 
   // Premium users get completely clean experience - NO indicators or limits

@@ -164,7 +164,29 @@ const KeyboardGuide = ({ onStartFirstLesson, onBackToMenu }: { onStartFirstLesso
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-text-primary p-4">
-      <header className="text-center mb-6">
+      <header className="relative w-full max-w-6xl text-center mb-6">
+        {/* Back button */}
+        <button 
+          onClick={onBackToMenu}
+          className="absolute left-0 top-0 p-2 text-text-secondary hover:text-accent transition-colors flex items-center gap-2"
+          title="Back to lessons"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+          </svg>
+          Back
+        </button>
+        
+        {/* Breadcrumb navigation */}
+        <nav className="absolute right-0 top-0 text-xs text-text-secondary mt-2 hidden sm:block">
+          <span>Home</span>
+          <span className="mx-1">→</span>
+          <span>Lessons</span>
+          <span className="mx-1">→</span>
+          <span className="text-accent">Keyboard Guide</span>
+        </nav>
+        
         <h1 className="text-4xl sm:text-5xl font-bold text-text-primary">Keyboard Positioning Guide</h1>
         <h2 className="text-2xl text-accent mt-2">{currentStep.title}</h2>
       </header>
