@@ -178,6 +178,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, [addToast]);
 
+  // Listen for user data refresh events to fix inconsistent premium features
+  useEffect(() => {
+    const handleUserDataRefresh = async (event: CustomEvent) => {
+      const refreshedUser = event.detail;
+      if (refreshedUser && user && refreshedUser.uid === user.uid) {
+        console.log('[Auth Context] Refreshing user data from event:', refreshedUser.subscription.tier);
+        setUser(refreshedUser);
+      }
+    };
+
+    window.addEventListener('userDataRefreshed', handleUserDataRefresh as any);
+    
+    return () => {
+      window.removeEventListener('userDataRefreshed', handleUserDataRefresh as any);
+    };
+  }, [user, addToast]);
+
   const signIn = useCallback(async (email: string, password: string, trustedDevice: boolean = false) => {
     try {
       // Use enhanced session service for sign-in with trusted device functionality
@@ -565,6 +582,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [user]); // Add user to dependency array to recreate when user changes
 
+  // Periodic premium status verification to fix inconsistent behavior
+  useEffect(() => {
+    if (!user || user.uid === 'guest') return;
+    
+    const verifyPremiumStatus = async () => {
+      try {
+        const latestUser = await userService.loadUserData(user.uid);
+        if (latestUser && latestUser.subscription.tier !== user.subscription.tier) {
+          console.log('🔄 [Premium Verification] Status mismatch detected:', {
+            current: user.subscription.tier,
+            firestore: latestUser.subscription.tier
+          });
+          setUser(latestUser);
+        }
+      } catch (error) {
+        console.warn('[Premium Verification] Failed to verify status:', error);
+      }
+    };
+
+    // Verify premium status every 30 seconds when user is active
+    const interval = setInterval(verifyPremiumStatus, 30000);
+    
+    // Also verify on window focus (when user returns to tab)
+    const handleFocus = () => {
+      console.log('🔄 [Premium Verification] Tab focused, verifying status...');
+      verifyPremiumStatus();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user]);
+
   // Enhanced session management methods
   const getSessionConfig = useCallback(() => {
     return enhancedSessionService.getSessionConfig();
@@ -646,3 +699,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
