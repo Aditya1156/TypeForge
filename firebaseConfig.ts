@@ -20,4 +20,35 @@ const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : fir
 const auth = app.auth();
 const db = app.firestore();
 
+// Configure Firebase Auth to persist authentication state across tabs
+// This ensures that authentication tokens are shared properly between browser tabs
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// Force immediate auth state synchronization for new tabs
+if (typeof window !== 'undefined') {
+  // Listen for auth state changes to sync across tabs
+  auth.onAuthStateChanged((user) => {
+    console.log('[Firebase Config] Auth state changed:', user ? `User: ${user.uid}` : 'No user');
+    
+    // Broadcast auth state change to other tabs
+    try {
+      localStorage.setItem('firebase_auth_state_change', JSON.stringify({
+        timestamp: Date.now(),
+        hasUser: !!user,
+        uid: user?.uid || null
+      }));
+    } catch (error) {
+      console.warn('[Firebase Config] Failed to broadcast auth state:', error);
+    }
+  });
+  
+  // Listen for auth state changes from other tabs
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'firebase_auth_state_change') {
+      console.log('[Firebase Config] Received auth state change from another tab');
+      // The auth state will automatically sync, we just log it
+    }
+  });
+}
+
 export { auth, db };

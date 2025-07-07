@@ -4,6 +4,7 @@ import TypingApp from './TypingApp';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
+import DebugPanel from './components/DebugPanel';
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
 import { useToast } from './context/ToastContext';
@@ -161,6 +162,7 @@ const App = () => {
     <ErrorBoundary>
       <TimerProvider>
         <ToastContainer />
+        <DebugPanel />
         {view === 'landing' ? (
           <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} onShowSignIn={handleShowSignInModal} />
         ) : (
@@ -172,6 +174,7 @@ const App = () => {
         <Suspense fallback={<LoadingSpinner />}>
           {renderModal()}
         </Suspense>
+        <DebugPanel />
       </TimerProvider>
     </ErrorBoundary>
   );

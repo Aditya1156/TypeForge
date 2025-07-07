@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { isPremiumUser } from '../utils/isPremiumUser';
 import { useProgressiveSignup } from '../hooks/useProgressiveSignup';
 
 interface SessionLimitGuardProps {
@@ -24,7 +25,7 @@ const SessionLimitGuard: React.FC<SessionLimitGuardProps> = ({
 
   // Helper function to check if user has reached daily session limit
   const hasReachedSessionLimit = () => {
-    if (!user || user.subscription?.tier !== 'free') {
+    if (!user || isPremiumUser(user)) {
       return false; // Premium users have unlimited sessions
     }
 
@@ -173,12 +174,12 @@ const SessionLimitGuard: React.FC<SessionLimitGuardProps> = ({
   }
 
   // Free users get clean experience - session tracking is handled in AppHeader
-  if (user && user.subscription?.tier === 'free') {
+  if (user && !isPremiumUser(user)) {
     return <>{children}</>;
   }
 
   // Premium users get completely clean experience - NO indicators or limits
-  if (user && (user.subscription?.tier === 'premium' || user.subscription?.tier === 'pro')) {
+  if (user && isPremiumUser(user)) {
     return <>{children}</>;
   }
 

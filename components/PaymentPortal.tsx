@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import type { SubscriptionTier } from '../types';
 import { validateGiftCode, validateSubscriptionTier, isRateLimited } from '../utils/security';
+import { isPremiumUser } from '../utils/isPremiumUser';
 
 interface PaymentPortalProps {
   tier: SubscriptionTier;
@@ -134,6 +135,17 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ tier, onSuccess, onCancel
 
   const currentPrice = tier === 'free' ? 0 : prices[tier as keyof typeof prices][billingPeriod];
   const yearlyDiscount = tier !== 'free' ? Math.round(((prices[tier as keyof typeof prices].monthly * 12) - prices[tier as keyof typeof prices].yearly) / (prices[tier as keyof typeof prices].monthly * 12) * 100) : 0;
+
+  // Block payment UI for premium users
+  if (isPremiumUser(user)) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold mb-2">You already have premium access!</h2>
+        <p className="text-muted-foreground mb-4">No need to pay again. Enjoy all features!</p>
+        <button className="btn btn-primary mt-2" onClick={onCancel}>Close</button>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

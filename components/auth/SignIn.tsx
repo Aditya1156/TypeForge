@@ -12,6 +12,7 @@ interface SignInProps {
 const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [trustedDevice, setTrustedDevice] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -45,7 +46,7 @@ const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => 
     try {
       // Set flag for redirect handling
       secureSessionStorage.set('signingIn', 'true');
-      await signIn(sanitizedEmail, sanitizedPassword);
+      await signIn(sanitizedEmail, sanitizedPassword, trustedDevice);
       if (onSignInSuccess) {
         onSignInSuccess();
       } else {
@@ -132,6 +133,18 @@ const SignIn = ({ onClose, onSwitchToSignUp, onSignInSuccess }: SignInProps) => 
           <div>
             <label htmlFor="password"  className="block text-sm font-medium text-text-secondary mb-1">Password</label>
             <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full px-4 py-2 bg-tertiary border border-border-primary rounded-md text-text-primary focus:ring-2 focus:ring-accent focus:outline-none" />
+          </div>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="trustedDevice"
+              checked={trustedDevice}
+              onChange={e => setTrustedDevice(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="trustedDevice" className="ml-2 block text-sm text-text-secondary">
+              Trust this device
+            </label>
           </div>
 
           {error && (

@@ -1,5 +1,6 @@
 import { useState, ChangeEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { isPremiumUser } from '../utils/isPremiumUser';
 import PremiumGuard from './PremiumGuard';
 import type { Chapter, Lesson, PracticeMode, Progress } from '../types';
 import LoadingSpinner from './LoadingSpinner';
@@ -42,7 +43,7 @@ const LessonSelector = ({
 
   // Free users get access to entire Chapter 1 (home row) + limited access to Chapter 2
   const maxFreeLessons = 10; // Increased to cover all of Chapter 1
-  const userTier = user?.subscription?.tier || 'free';
+  const isUserPremium = isPremiumUser(user);
 
   const toggleLesson = (lessonId: string) => {
     setExpandedLessonId((prev: string | null) => (prev === lessonId ? null : lessonId));
@@ -249,7 +250,7 @@ const LessonSelector = ({
               // Determine if entire chapter should be locked
               // Free users get Chapter 0 (welcome) and Chapter 1 (home row) completely free
               // Chapter 2+ are fully locked for premium
-              const isEntireChapterLocked = userTier === 'free' && chapterIndex >= 2; // Only Chapter 2+ are fully locked
+              const isEntireChapterLocked = !isUserPremium && chapterIndex >= 2; // Only Chapter 2+ are fully locked
               
               const chapterContent = (
                 <div key={chapter.id} className="bg-secondary rounded-xl border border-border-primary p-6">
@@ -270,7 +271,7 @@ const LessonSelector = ({
                         .reduce((acc, prevChapter) => acc + prevChapter.lessons.length, 0) + lessonIndex;
                       
                       // Chapter 1 (home row) is always free, other chapters use global lesson limit
-                      const isLessonLocked = userTier === 'free' && chapterIndex > 1 && globalLessonIndex >= maxFreeLessons;
+                      const isLessonLocked = !isUserPremium && chapterIndex > 1 && globalLessonIndex >= maxFreeLessons;
                       
                       if (lesson.type === 'guide') {
                         const guideContent = (

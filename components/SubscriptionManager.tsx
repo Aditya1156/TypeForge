@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import PaymentPortal from './PaymentPortal';
 import GiftCodeRedemption from './GiftCodeRedemption';
+import { isPremiumUser } from '../utils/isPremiumUser';
 import type { SubscriptionTier } from '../types';
 
 interface SubscriptionManagerProps {
@@ -130,6 +131,17 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose }) =>
       console.error('Trial start failed:', error);
     }
   };
+
+  // Early return for premium users
+  if (isPremiumUser(user)) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold mb-2">You already have premium access!</h2>
+        <p className="text-muted-foreground mb-4">Enjoy all features—no need to upgrade again.</p>
+        <button className="btn btn-primary mt-2" onClick={onClose}>Close</button>
+      </div>
+    );
+  }
 
   return (
     <div 

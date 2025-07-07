@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import { useTimer } from '../context/TimerContext';
 import { useState, useEffect } from 'react';
+import { isPremiumUser } from '../utils/isPremiumUser';
 import PremiumBadge from './PremiumBadge';
 import type { ModalType } from '../types';
 
@@ -44,15 +45,12 @@ const AppHeader = ({ onShowModal, onOpenSidebar }: AppHeaderProps) => {
       return { used: 0, limit: 3, isLimited: true };
     }
 
-    const tier = user.subscription?.tier || 'free';
     const used = user.subscription?.sessionsUsed || 0;
     
-    switch (tier) {
-      case 'premium':
-      case 'pro':
-        return { used, limit: null, isLimited: false };
-      default:
-        return { used, limit: 3, isLimited: true };
+    if (isPremiumUser(user)) {
+      return { used, limit: null, isLimited: false };
+    } else {
+      return { used, limit: 3, isLimited: true };
     }
   };
 

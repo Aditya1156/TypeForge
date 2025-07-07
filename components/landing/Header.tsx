@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
+import { isPremiumUser } from '../../utils/isPremiumUser';
 import type { ModalType, Theme } from '../../types';
 
 interface HeaderProps {
@@ -112,7 +113,7 @@ const Header = ({ onShowModal, onShowSignIn }: HeaderProps) => {
                   <div className="absolute top-full right-0 mt-2 w-48 bg-primary/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-xl z-50">
                     <div className="p-2">
                       {themes.map((themeOption) => {
-                        const isLocked = themeOption.premium && user?.subscription?.tier === 'free';
+                        const isLocked = themeOption.premium && !isPremiumUser(user);
                         return (
                           <button
                             key={themeOption.value}
@@ -246,7 +247,7 @@ const Header = ({ onShowModal, onShowSignIn }: HeaderProps) => {
                   <h3 className="text-lg text-text-secondary mb-4">Choose Theme</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {themes.map((themeOption) => {
-                      const isLocked = themeOption.premium && user?.subscription?.tier === 'free';
+                      const isLocked = themeOption.premium && !isPremiumUser(user);
                       return (
                         <button
                           key={themeOption.value}

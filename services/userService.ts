@@ -1,19 +1,6 @@
 import { db } from '../firebaseConfig';
+import { authSync } from '../utils/authSync';
 import type { User, SubscriptionTier, SubscriptionInfo, PremiumFeatures } from '../types';
-
-/**
- * Check if Firebase is available and connected
- */
-const checkFirebaseConnection = async (): Promise<boolean> => {
-  try {
-    // Try to perform a simple read operation
-    await db.collection('_connection_test').limit(1).get();
-    return true;
-  } catch (error) {
-    console.warn('Firebase connection check failed:', error);
-    return false;
-  }
-};
 
 export interface UserDocument {
   uid: string;
@@ -27,94 +14,86 @@ export interface UserDocument {
 
 export const userService = {
   /**
-   * Create or update user document in Firestore
+   * Create or update user document in Firestore with auth state synchronization
    */
   async saveUserData(user: User): Promise<void> {
     try {
-      // Check connection first
-      const isConnected = await checkFirebaseConnection();
-      if (!isConnected) {
-        throw new Error('Firebase connection not available');
-      }
+      // Use auth sync utility to retry with proper auth state
+      await authSync.retryWithAuthSync(async () => {
+        const userDoc: UserDocument = {
+          ...user,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
 
-      const userDoc: UserDocument = {
-        ...user,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      await db.collection('users').doc(user.uid).set(userDoc, { merge: true });
-      console.log('User data saved to Firestore:', user.uid);
+        await db.collection('users').doc(user.uid).set(userDoc, { merge: true });
+        console.log('[UserService] ✅ User data saved to Firestore:', user.uid);
+      });
     } catch (error) {
-      console.error('Error saving user data to Firestore:', error);
+      console.error('[UserService] ❌ Error saving user data to Firestore:', error);
       // Don't throw error to prevent authentication failures
       throw error;
     }
   },
 
   /**
-   * Load user data from Firestore
+   * Load user data from Firestore with auth state synchronization
    */
   async loadUserData(uid: string): Promise<User | null> {
     try {
-      // Check connection first
-      const isConnected = await checkFirebaseConnection();
-      if (!isConnected) {
-        console.warn('Firebase connection not available, cannot load user data');
-        return null;
-      }
+      // Use auth sync utility to retry with proper auth state
+      return await authSync.retryWithAuthSync(async () => {
+        console.log('[UserService] Loading user data from Firestore for:', uid);
+        
+        const doc = await db.collection('users').doc(uid).get();
+        
+        if (!doc.exists) {
+          console.log('[UserService] No user document found in Firestore for:', uid);
+          return null;
+        }
 
-      const doc = await db.collection('users').doc(uid).get();
-      
-      if (!doc.exists) {
-        console.log('No user document found in Firestore for:', uid);
-        return null;
-      }
+        const data = doc.data() as UserDocument;
+        const user: User = {
+          uid: data.uid,
+          name: data.name,
+          email: data.email,
+          subscription: data.subscription,
+          features: data.features
+        };
 
-      const data = doc.data() as UserDocument;
-      const user: User = {
-        uid: data.uid,
-        name: data.name,
-        email: data.email,
-        subscription: data.subscription,
-        features: data.features
-      };
-
-      console.log('User data loaded from Firestore:', uid);
-      return user;
+        console.log('[UserService] ✅ User data loaded from Firestore:', uid, 'Tier:', user.subscription.tier);
+        return user;
+      });
     } catch (error) {
-      console.error('Error loading user data from Firestore:', error);
+      console.error('[UserService] ❌ Error loading user data from Firestore:', error);
       // Return null instead of throwing to allow fallback to default data
       return null;
     }
   },
 
   /**
-   * Update subscription data in Firestore
+   * Update subscription data in Firestore with auth state synchronization
    */
   async updateSubscription(uid: string, subscription: SubscriptionInfo, features: PremiumFeatures): Promise<void> {
     try {
-      console.log('Updating subscription for user:', uid);
-      console.log('New subscription data:', subscription);
-      console.log('New features:', features);
+      console.log('[UserService] Updating subscription for user:', uid);
+      console.log('[UserService] New subscription data:', subscription);
+      console.log('[UserService] New features:', features);
       
-      // Check Firebase connection first
-      const isConnected = await checkFirebaseConnection();
-      if (!isConnected) {
-        throw new Error('Firebase connection not available');
-      }
-      
-      // Use set with merge to ensure document exists
-      await db.collection('users').doc(uid).set({
-        subscription,
-        features,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-      
-      console.log('Subscription updated successfully in Firestore for user:', uid);
+      // Use auth sync utility to retry with proper auth state
+      await authSync.retryWithAuthSync(async () => {
+        // Use set with merge to ensure document exists
+        await db.collection('users').doc(uid).set({
+          subscription,
+          features,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        console.log('[UserService] ✅ Subscription updated successfully in Firestore for user:', uid);
+      });
     } catch (error) {
-      console.error('Error updating subscription in Firestore:', error);
-      console.error('Error details:', {
+      console.error('[UserService] ❌ Error updating subscription in Firestore:', error);
+      console.error('[UserService] Error details:', {
         code: (error as any)?.code,
         message: (error as any)?.message,
         uid,

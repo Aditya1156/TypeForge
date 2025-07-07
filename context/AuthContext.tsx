@@ -2,6 +2,8 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import { auth } from '../firebaseConfig';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
+import { enhancedSessionService, SessionConfig } from '../services/enhancedSessionService';
+import { authSync } from '../utils/authSync';
 import type { User, SubscriptionTier } from '../types';
 import { useToast } from './ToastContext';
 import { secureSessionStorage } from '../utils/security';
@@ -9,7 +11,7 @@ import { secureSessionStorage } from '../utils/security';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<User>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User>;
   signUp: (name: string, email: string, password: string) => Promise<User>;
   signOut: () => void;
   signInWithGoogle: () => Promise<void>;
@@ -17,6 +19,13 @@ interface AuthContextType {
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   upgradeSubscription: (tier: SubscriptionTier, paymentMethod?: string) => Promise<void>;
   redeemGiftCode: (code: string) => Promise<SubscriptionTier>;
+  // Enhanced session management
+  getSessionConfig: () => SessionConfig;
+  updateSessionConfig: (config: Partial<SessionConfig>) => Promise<void>;
+  isDeviceTrusted: () => boolean;
+  addTrustedDevice: () => Promise<void>;
+  extendSession: () => Promise<void>;
+  getSessionTimeRemaining: () => number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +34,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { addToast } = useToast();
+
+  // Initialize auth synchronization for cross-tab support
+  useEffect(() => {
+    console.log('[Auth Context] Setting up auth synchronization...');
+    
+    // Setup cross-tab auth state synchronization
+    const cleanupCrossTabSync = authSync.setupCrossTabSync();
+    
+    // Ensure auth state is properly initialized on mount
+    authSync.syncAuthState().catch(error => {
+      console.warn('[Auth Context] Initial auth sync failed:', error);
+    });
+    
+    return cleanupCrossTabSync;
+  }, []);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
@@ -154,9 +178,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, [addToast]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string, trustedDevice: boolean = false) => {
     try {
-      const signedInUser = await authService.signIn(email, password);
+      // Use enhanced session service for sign-in with trusted device functionality
+      const sessionConfig: Partial<SessionConfig> = {
+        trustedDevice,
+        rememberMe: trustedDevice,
+        sessionDuration: trustedDevice ? 10 : 1, // 10 days if trusted, 1 day otherwise
+        autoLogin: trustedDevice
+      };
+      
+      const firebaseUser = await enhancedSessionService.signInWithRemember(email, password, sessionConfig);
+      const signedInUser = await userService.loadUserData(firebaseUser.uid) || 
+                          userService.createDefaultUserData(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email);
+      
       // Set user state immediately for faster UI update
       setUser(signedInUser);
       const displayName = signedInUser.name || signedInUser.email?.split('@')[0] || 'User';
@@ -229,9 +264,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) {
       throw new Error('User must be signed in to upgrade subscription');
     }
-
     if (user.uid === 'guest') {
       throw new Error('Please sign in to upgrade your subscription');
+    }
+
+    // Always fetch latest user data before upgrade
+    let latestUser: User | null = null;
+    try {
+      latestUser = await userService.loadUserData(user.uid);
+    } catch (err) {
+      console.warn('Could not fetch latest user data before upgrade:', err);
+    }
+    const currentTier = latestUser?.subscription?.tier || user.subscription.tier;
+    if (currentTier === 'premium' || currentTier === 'pro') {
+      addToast('You already have premium access!', 'info');
+      return;
     }
 
     try {
@@ -264,7 +311,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         // Try to update subscription in Firestore
         await userService.updateSubscription(user.uid, updatedSubscription, updatedFeatures);
-        console.log('Subscription upgrade completed successfully with Firestore sync');
+        console.log('✅ Firestore subscription update successful');
+        // Broadcast premium status change to all tabs using multiple methods
+        const statusChangeData = { 
+          tier, 
+          timestamp: Date.now(), 
+          userId: user.uid 
+        };
+        
+        // Method 1: localStorage (works for other tabs)
+        localStorage.setItem('premiumStatusChanged', JSON.stringify(statusChangeData));
+        console.log('📤 localStorage premium status change sent:', statusChangeData);
+        
+        // Method 2: BroadcastChannel (modern browsers, works for all tabs including current)
+        if ('BroadcastChannel' in window) {
+          const channel = new BroadcastChannel('premium-sync');
+          channel.postMessage(statusChangeData);
+          console.log('📤 BroadcastChannel message sent:', statusChangeData);
+          channel.close();
+        }
+        
+        // Method 3: Custom event for current tab
+        window.dispatchEvent(new CustomEvent('premiumStatusUpdated', { 
+          detail: statusChangeData
+        }));
+        console.log('📤 Custom event dispatched:', statusChangeData);
+        
+        console.log('🔄 Broadcasting premium status change to all tabs...');
+        // Fetch latest user data from Firestore to ensure all tabs/devices are in sync
+        const latestUser = await userService.loadUserData(user.uid);
+        if (latestUser) {
+          console.log('✅ Context updated with latest user data:', latestUser.subscription.tier);
+          setUser(latestUser);
+        }
+        
+        // Force immediate UI update by triggering a re-render
+        setTimeout(() => {
+          console.log('🔄 Forcing component re-renders...');
+          window.dispatchEvent(new Event('resize')); // Triggers re-renders in many components
+        }, 100);
+        
         addToast(`Successfully upgraded to ${tier}!`, 'success');
       } catch (firestoreError: any) {
         console.warn('Firestore update failed, but subscription is active locally:', firestoreError);
@@ -355,7 +441,178 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, retryPendingSubscriptionUpdate]);
 
-  const value = { user, isLoading, signIn, signUp, signOut, signInWithGoogle, updateProfile, updatePassword, upgradeSubscription, redeemGiftCode };
+  // Refetch user data from Firestore on window focus to sync premium status
+  useEffect(() => {
+    const handleFocus = async () => {
+      if (auth.currentUser && auth.currentUser.uid !== 'guest') {
+        try {
+          const latestUser = await userService.loadUserData(auth.currentUser.uid);
+          if (latestUser) {
+            setUser(latestUser);
+          }
+        } catch (err) {
+          console.warn('Failed to refresh user data from Firestore:', err);
+        }
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // --- Robust Premium Sync: Polling, Cross-tab, and Guaranteed Fetch ---
+  useEffect(() => {
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    // Helper to fetch latest user data from Firestore with auth sync
+    const fetchLatestUser = async () => {
+      // Use the current user from context instead of auth.currentUser
+      const currentUserId = user?.uid || auth.currentUser?.uid;
+      if (currentUserId && currentUserId !== 'guest') {
+        try {
+          console.log('🔄 Fetching latest user data from Firestore for:', currentUserId);
+          
+          // Ensure auth state is valid before making Firestore calls
+          const isAuthValid = await authSync.isAuthStateValid();
+          if (!isAuthValid) {
+            console.log('🔄 Auth state invalid, syncing before fetch...');
+            await authSync.syncAuthState();
+          }
+          
+          const latestUser = await userService.loadUserData(currentUserId);
+          if (latestUser) {
+            console.log('✅ Updated user data:', latestUser.subscription.tier);
+            setUser(latestUser);
+          } else {
+            console.warn('❌ No user data found in Firestore for:', currentUserId);
+          }
+        } catch (err) {
+          console.warn('❌ Failed to poll user data from Firestore:', err);
+          
+          // If it's a permissions error, try to sync auth state
+          if ((err as any)?.message?.includes('Missing or insufficient permissions')) {
+            console.log('🔄 Permissions error detected, forcing auth sync...');
+            try {
+              await authSync.syncAuthState();
+              // Retry once after auth sync
+              const latestUser = await userService.loadUserData(currentUserId);
+              if (latestUser) {
+                console.log('✅ Retry successful after auth sync:', latestUser.subscription.tier);
+                setUser(latestUser);
+              }
+            } catch (retryError) {
+              console.warn('❌ Retry after auth sync also failed:', retryError);
+            }
+          }
+        }
+      } else {
+        console.log('⏭️ Skipping fetch - no valid user ID found');
+      }
+    };
+
+    // 1. Guaranteed fetch on mount if session exists
+    const currentUserId = user?.uid || auth.currentUser?.uid;
+    if (currentUserId && currentUserId !== 'guest') {
+      console.log('🎯 Initial fetch on mount for user:', currentUserId);
+      fetchLatestUser();
+    }
+
+    // 2. Polling every 45 seconds
+    pollingInterval = setInterval(fetchLatestUser, 45000);
+
+    // 3. Cross-tab sync: listen for storage changes, broadcast channel, AND custom events
+    const handleStorage = (e: StorageEvent) => {
+      console.log('📨 Storage event received:', e.key, e.newValue);
+      if (e.key === 'premiumStatusChanged') {
+        console.log('🔄 Storage event detected, fetching latest user data...');
+        fetchLatestUser();
+      } else if (
+        e.key === 'pendingSubscriptionUpdate' ||
+        e.key === 'typer_session_data'
+      ) {
+        fetchLatestUser();
+      }
+    };
+    
+    const handlePremiumUpdate = (event: any) => {
+      console.log('🔄 Premium update event detected:', event.detail);
+      fetchLatestUser();
+    };
+    
+    // BroadcastChannel for modern browsers (works across all tabs)
+    let broadcastChannel: BroadcastChannel | null = null;
+    if ('BroadcastChannel' in window) {
+      broadcastChannel = new BroadcastChannel('premium-sync');
+      broadcastChannel.onmessage = (event) => {
+        console.log('🔄 BroadcastChannel message received:', event.data);
+        fetchLatestUser();
+      };
+      console.log('✅ BroadcastChannel listener set up');
+    } else {
+      console.warn('❌ BroadcastChannel not supported');
+    }
+    
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('premiumStatusUpdated', handlePremiumUpdate);
+    console.log('✅ Event listeners set up for premium sync');
+
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('premiumStatusUpdated', handlePremiumUpdate);
+      if (broadcastChannel) {
+        broadcastChannel.close();
+      }
+    };
+  }, [user]); // Add user to dependency array to recreate when user changes
+
+  // Enhanced session management methods
+  const getSessionConfig = useCallback(() => {
+    return enhancedSessionService.getSessionConfig();
+  }, []);
+
+  const updateSessionConfig = useCallback(async (config: Partial<SessionConfig>) => {
+    await enhancedSessionService.updateSessionConfig(config);
+  }, []);
+
+  const isDeviceTrusted = useCallback(() => {
+    return enhancedSessionService.isDeviceTrusted();
+  }, []);
+
+  const addTrustedDevice = useCallback(async () => {
+    await enhancedSessionService.addTrustedDevice();
+    addToast('Device added to trusted devices', 'success');
+  }, [addToast]);
+
+  const extendSession = useCallback(async () => {
+    await enhancedSessionService.extendSession();
+    addToast('Session extended successfully', 'success');
+  }, [addToast]);
+
+  const getSessionTimeRemaining = useCallback(() => {
+    const sessionData = enhancedSessionService.getSessionData();
+    if (!sessionData) return 0;
+    return Math.max(0, sessionData.expiresAt - Date.now());
+  }, []);
+
+  const value = { 
+    user, 
+    isLoading, 
+    signIn, 
+    signUp, 
+    signOut, 
+    signInWithGoogle, 
+    updateProfile, 
+    updatePassword, 
+    upgradeSubscription, 
+    redeemGiftCode,
+    // Enhanced session management
+    getSessionConfig,
+    updateSessionConfig,
+    isDeviceTrusted,
+    addTrustedDevice,
+    extendSession,
+    getSessionTimeRemaining
+  };
 
   return (
     <AuthContext.Provider value={value}>

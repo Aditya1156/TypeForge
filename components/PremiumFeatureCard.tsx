@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
+import { isPremiumUser } from '../utils/isPremiumUser';
 import type { SubscriptionTier } from '../types';
 
 interface PremiumFeatureCardProps {
@@ -43,7 +44,6 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
     }
   };
 
-
   const hasAccess = () => {
     if (!user || user.uid === 'guest') return false; // Guest users have no premium access
     const userTier = user.subscription?.tier || 'free';
@@ -52,6 +52,24 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
   };
 
   const userHasAccess = hasAccess();
+
+  if (isPremiumUser(user)) {
+    return (
+      <div className={`relative bg-secondary rounded-xl p-6 border border-border-primary transition-all duration-300 hover:shadow-lg ${className}`}>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            {icon}
+            <div>
+              <h3 className="text-lg font-semibold">{title}</h3>
+              <p className="text-xs text-muted-foreground">{description}</p>
+            </div>
+          </div>
+        </div>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className={`relative bg-secondary rounded-xl p-6 border border-border-primary transition-all duration-300 hover:shadow-lg ${className}`}>

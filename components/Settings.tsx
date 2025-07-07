@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { playSound } from '../utils/helpers';
+import { isPremiumUser } from '../utils/isPremiumUser';
 import PremiumGuard from './PremiumGuard';
 import type { Theme, CaretStyle } from '../types';
 
@@ -12,7 +13,8 @@ interface SettingsProps {
 
 const Settings = ({ onClose, onUpgrade }: SettingsProps) => {
   const { user } = useAuth();
-  const userTier = user?.subscription?.tier || 'free';
+  // Always use the latest context value and isPremiumUser utility
+  const isUserPremium = isPremiumUser(user);
   const { 
     isSoundEnabled, 
     toggleSound,
@@ -105,7 +107,7 @@ const Settings = ({ onClose, onUpgrade }: SettingsProps) => {
                     Premium Themes 
                     <span className="text-accent">✨</span>
                   </h4>
-                  {userTier === 'free' ? (
+                  {!isUserPremium ? (
                     <PremiumGuard
                       feature="theme"
                       requiredTier="premium"
