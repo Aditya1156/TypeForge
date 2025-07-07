@@ -4,7 +4,6 @@ import TypingApp from './TypingApp';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
-import DebugPanel from './components/DebugPanel';
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
 import { useToast } from './context/ToastContext';
@@ -39,10 +38,8 @@ const App = () => {
     if (!isLoading && user && user.uid !== 'guest' && !initialAuthChecked) {
       // Check if user was just authenticated (not initial load with existing auth)
       const wasSigningIn = secureSessionStorage.get('signingIn');
-      console.log('Auth check:', { wasSigningIn, view, userUid: user.uid });
       
       if (wasSigningIn && view === 'landing') {
-        console.log('Redirecting to main app after authentication');
         setView('app');
         setActiveModal(null);
         secureSessionStorage.remove('signingIn');
@@ -58,7 +55,6 @@ const App = () => {
       const wasSigningIn = secureSessionStorage.get('signingIn');
       if (!wasSigningIn && !initialAuthChecked && isGoogleRedirect) {
         // This is definitely a Google Sign-In redirect
-        console.log('Google Sign-In redirect detected via URL parameters, switching to app view');
         setView('app');
         setActiveModal(null);
       }
@@ -162,7 +158,6 @@ const App = () => {
     <ErrorBoundary>
       <TimerProvider>
         <ToastContainer />
-        <DebugPanel />
         {view === 'landing' ? (
           <LandingPage onStartTyping={handleStartTyping} onShowModal={handleShowModal} onShowSignIn={handleShowSignInModal} />
         ) : (
@@ -174,7 +169,6 @@ const App = () => {
         <Suspense fallback={<LoadingSpinner />}>
           {renderModal()}
         </Suspense>
-        <DebugPanel />
       </TimerProvider>
     </ErrorBoundary>
   );

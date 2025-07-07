@@ -14,16 +14,46 @@ export default defineConfig(({ mode }) => {
         }
       },
       build: {
-        chunkSizeWarningLimit: 1000,
+        target: 'es2020',
+        minify: 'terser',
+        cssMinify: true,
+        reportCompressedSize: true,
+        chunkSizeWarningLimit: 800,
         rollupOptions: {
+          treeshake: true,
           output: {
             manualChunks: {
               vendor: ['react', 'react-dom'],
               firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-              ai: ['@google/genai']
+              ai: ['@google/genai'],
+              'auth-components': [
+                './components/auth/SignIn.tsx',
+                './components/auth/SignUp.tsx',
+                './components/auth/Profile.tsx'
+              ],
+              'dashboard-components': [
+                './components/dashboard/Dashboard.tsx',
+                './components/dashboard/PerformanceChart.tsx',
+                './components/dashboard/StatsCards.tsx'
+              ]
+            },
+            chunkFileNames: (chunkInfo) => {
+              const facadeModuleId = chunkInfo.facadeModuleId ? 
+                chunkInfo.facadeModuleId.split('/').pop()?.split('.')[0] || 'chunk' : 'chunk';
+              return `assets/${facadeModuleId}-[hash].js`;
             }
           }
+        },
+        terserOptions: {
+          compress: {
+            drop_console: mode === 'production',
+            drop_debugger: mode === 'production',
+            pure_funcs: mode === 'production' ? ['console.log', 'console.info', 'console.debug'] : []
+          }
         }
+      },
+      optimizeDeps: {
+        include: ['react', 'react-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore']
       }
     };
 });
