@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import PremiumFeatureCard from '../PremiumFeatureCard';
 import DashboardTabs from './DashboardTabs';
@@ -13,8 +14,13 @@ interface DashboardProps {
     onUpgrade?: () => void;
 }
 
-const Dashboard = ({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: DashboardProps) => {
+const Dashboard = memo(({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: DashboardProps) => {
     const { user } = useAuth();
+
+    // Memoize performance entries to prevent recalculation on every render
+    const performanceEntries = useMemo(() => {
+        return Object.values(progress);
+    }, [progress]);
 
     if (!isProgressLoaded) {
         return <div className="flex justify-center items-center h-64"><LoadingSpinner /></div>;
@@ -79,8 +85,6 @@ const Dashboard = ({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: Das
             </div>
         );
     }
-    
-    const performanceEntries = Object.values(progress);
 
     if (performanceEntries.length === 0) {
        return (
@@ -160,6 +164,8 @@ const Dashboard = ({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: Das
             </section>
         </div>
     );
-};
+});
+
+Dashboard.displayName = 'Dashboard';
 
 export default Dashboard;

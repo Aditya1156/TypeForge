@@ -45,6 +45,28 @@ export function throttle<T extends (...args: any[]) => void>(
 }
 
 /**
+ * Memoization function for caching expensive computations
+ */
+export function memoize<TArgs extends any[], TReturn>(
+  fn: (...args: TArgs) => TReturn,
+  getKey?: (...args: TArgs) => string
+): (...args: TArgs) => TReturn {
+  const cache = new Map<string, TReturn>();
+  
+  return (...args: TArgs): TReturn => {
+    const key = getKey ? getKey(...args) : JSON.stringify(args);
+    
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+/**
  * Performance monitoring utilities
  */
 export const perf = {

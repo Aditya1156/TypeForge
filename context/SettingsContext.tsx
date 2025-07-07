@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import type { Theme, CaretStyle, SettingsContextType } from '../types';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -51,14 +51,15 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     }, [theme]);
 
 
-    const value = {
+    // Memoize the context value to prevent unnecessary re-renders
+    const value = useMemo(() => ({
         theme,
         setTheme,
         isSoundEnabled,
         toggleSound,
         caretStyle,
         setCaretStyle,
-    };
+    }), [theme, isSoundEnabled, caretStyle, setTheme, toggleSound, setCaretStyle]);
 
     return (
         <SettingsContext.Provider value={value}>

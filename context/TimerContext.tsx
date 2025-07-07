@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../firebaseConfig';
 import { useAuth } from './AuthContext';
 
@@ -288,25 +288,45 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isSessionActive, timerStats.currentSessionTime, timerStats.sessionLimit, timerStats.dailyTimeSpent, timerStats.dailyLimit, endSession]);
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    timerStats,
+    isSessionActive,
+    startSession,
+    endSession,
+    pauseSession,
+    resumeSession,
+    setDailyGoal,
+    setSessionLimit,
+    setDailyLimit,
+    formatTime,
+    getTimeUntilGoal,
+    isGoalReached,
+    isSessionLimitReached,
+    isDailyLimitReached,
+    getTimeUntilSessionLimit,
+    getTimeUntilDailyLimit
+  }), [
+    timerStats,
+    isSessionActive,
+    startSession,
+    endSession,
+    pauseSession,
+    resumeSession,
+    setDailyGoal,
+    setSessionLimit,
+    setDailyLimit,
+    formatTime,
+    getTimeUntilGoal,
+    isGoalReached,
+    isSessionLimitReached,
+    isDailyLimitReached,
+    getTimeUntilSessionLimit,
+    getTimeUntilDailyLimit
+  ]);
+
   return (
-    <TimerContext.Provider value={{
-      timerStats,
-      isSessionActive,
-      startSession,
-      endSession,
-      pauseSession,
-      resumeSession,
-      setDailyGoal,
-      setSessionLimit,
-      setDailyLimit,
-      formatTime,
-      getTimeUntilGoal,
-      isGoalReached,
-      isSessionLimitReached,
-      isDailyLimitReached,
-      getTimeUntilSessionLimit,
-      getTimeUntilDailyLimit
-    }}>
+    <TimerContext.Provider value={contextValue}>
       {children}
     </TimerContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { auth } from '../firebaseConfig';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
@@ -594,7 +594,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return Math.max(0, sessionData.expiresAt - Date.now());
   }, []);
 
-  const value = { 
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({ 
     user, 
     isLoading, 
     signIn, 
@@ -612,7 +613,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     addTrustedDevice,
     extendSession,
     getSessionTimeRemaining
-  };
+  }), [
+    user,
+    isLoading,
+    signIn,
+    signUp,
+    signOut,
+    signInWithGoogle,
+    updateProfile,
+    updatePassword,
+    upgradeSubscription,
+    redeemGiftCode,
+    getSessionConfig,
+    updateSessionConfig,
+    isDeviceTrusted,
+    addTrustedDevice,
+    extendSession,
+    getSessionTimeRemaining
+  ]);
 
   return (
     <AuthContext.Provider value={value}>

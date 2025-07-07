@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
 import type { ToastMessage, ToastType, ToastContextType } from '../types';
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -19,7 +19,12 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
   }, []);
 
-  const value: ToastContextType = { toasts, addToast, removeToast };
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: ToastContextType = useMemo(() => ({
+    toasts,
+    addToast,
+    removeToast
+  }), [toasts, addToast, removeToast]);
 
   return (
     <ToastContext.Provider value={value}>
