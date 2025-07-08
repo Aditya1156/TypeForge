@@ -75,8 +75,15 @@ const AppHeader = ({ onShowModal, onOpenSidebar }: AppHeaderProps) => {
     <header className={`fixed top-0 left-0 right-0 w-full bg-secondary/30 backdrop-blur-sm border-b border-border-primary z-50 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left side - User Profile */}
-          <div className="flex items-center">
+          {/* Left side - App Logo & User Profile */}
+          <div className="flex items-center space-x-6">
+            {/* App Logo */}
+            <div className="text-xl font-bold text-text-primary">
+              <span className="drop-shadow-lg">
+                Typing<span className="text-accent bg-gradient-to-r from-accent via-accent/90 to-accent/80 bg-clip-text text-transparent">Path</span>
+              </span>
+            </div>
+            
             {/* User Profile */}
             <button 
               onClick={() => {

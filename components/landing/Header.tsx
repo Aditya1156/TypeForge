@@ -66,7 +66,7 @@ const Header = ({ onShowModal, onShowSignIn }: HeaderProps) => {
               className="text-2xl sm:text-3xl font-bold text-text-primary hover:scale-110 transition-all duration-300 cursor-pointer group"
             >
               <span className="drop-shadow-lg group-hover:drop-shadow-2xl transition-all duration-300">
-                Type<span className="text-accent bg-gradient-to-r from-accent via-accent/90 to-accent/80 bg-clip-text text-transparent">Forge</span>
+                Type<span className="text-accent bg-gradient-to-r from-accent via-accent/90 to-accent/80 bg-clip-text text-transparent">Path</span>
               </span>
             </button>
           
