@@ -25,13 +25,13 @@ const Hero = ({ onStartTyping }: HeroProps) => (
         Master Touch Typing with
         <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/70">
-          Aether AI™ Coach
+          TypingPath AI™ Coach
         </span>
       </h1>
       
       <p className="max-w-3xl mx-auto text-lg sm:text-xl text-text-secondary mb-8 leading-relaxed">
-        Transform your typing from hunt-and-peck to professional speed. Our AI analyzes your mistakes, 
-        creates personalized drills, and tracks your progress with military precision.
+        Transform your typing from hunt-and-peck to professional speed with TypingPath. Our AI analyzes your mistakes, 
+        creates personalized typing drills, and tracks your progress. Perfect for Vietnam typing practice and Vietnamese learners.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
