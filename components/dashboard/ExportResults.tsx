@@ -93,10 +93,10 @@ const ExportResults = ({ progress }: ExportResultsProps) => {
             
             if (exportFormat === 'csv') {
                 const csvContent = generateCSV();
-                downloadFile(csvContent, `typeforge-results-${timestamp}.csv`, 'text/csv');
+                downloadFile(csvContent, `typingpath-results-${timestamp}.csv`, 'text/csv');
             } else {
                 const jsonContent = generateJSON();
-                downloadFile(jsonContent, `typeforge-results-${timestamp}.json`, 'application/json');
+                downloadFile(jsonContent, `typingpath-results-${timestamp}.json`, 'application/json');
             }
         } catch (error) {
             console.error('Export failed:', error);
@@ -201,7 +201,7 @@ const ExportResults = ({ progress }: ExportResultsProps) => {
                     {/* Format Details */}
                     <div className="text-xs text-text-secondary space-y-1">
                         <p><strong>Privacy:</strong> All data is exported locally - nothing is sent to external servers.</p>
-                        <p><strong>File name:</strong> typeforge-results-{new Date().toISOString().split('T')[0]}.{exportFormat}</p>
+                        <p><strong>File name:</strong> typingpath-results-{new Date().toISOString().split('T')[0]}.{exportFormat}</p>
                     </div>
                 </div>
             )}

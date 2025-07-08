@@ -6,7 +6,7 @@ const CallToAction = ({ onStartTyping }: { onStartTyping: () => void }) => (
           Ready to Transform Your Typing?
         </h2>
         <p className="text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
-          Join over 50,000 users who have already improved their typing speed and accuracy with TypeForge's AI-powered training.
+          Join over 50,000 users who have already improved their typing speed and accuracy with TypingPath's AI-powered training.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

@@ -13,7 +13,7 @@ const TipsInsights = ({ progress }: TipsInsightsProps) => {
                 {
                     type: 'tip',
                     icon: '💡',
-                    title: 'Welcome to TypeForge!',
+                    title: 'Welcome to TypingPath!',
                     message: 'Start with the home row keys (asdf jkl;) to build a strong foundation for touch typing.'
                 },
                 {

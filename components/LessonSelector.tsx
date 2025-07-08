@@ -157,7 +157,7 @@ const LessonSelector = ({
                     className="flex-1 flex justify-center items-center gap-2 px-4 py-3 font-semibold text-primary bg-accent rounded-lg hover:bg-accent/90 disabled:bg-tertiary disabled:text-text-secondary disabled:cursor-not-allowed transition-all relative overflow-hidden"
                   >
                     {isAiDrillLoading && difficultKeys.trim() ? <LoadingSpinner /> : 'Generate Drill'}
-                    {/* TypeForge Logo Symbol - Blurred */}
+                    {/* TypingPath Logo Symbol - Blurred */}
                     <div className="absolute top-1 right-2 opacity-20 blur-[1px]">
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/40">
                         <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -173,7 +173,7 @@ const LessonSelector = ({
                     className="px-4 py-3 font-semibold text-primary bg-success rounded-lg hover:bg-success/90 disabled:bg-tertiary disabled:text-text-secondary transition-all relative overflow-hidden"
                   >
                     🎲
-                    {/* TypeForge Logo Symbol - Blurred */}
+                    {/* TypingPath Logo Symbol - Blurred */}
                     <div className="absolute top-1 right-1 opacity-20 blur-[1px]">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/40">
                         <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -216,7 +216,7 @@ const LessonSelector = ({
                 className="w-full px-6 py-3 font-semibold text-primary bg-warning rounded-lg hover:bg-warning/90 transition-all transform hover:scale-[1.02] relative overflow-hidden"
               >
                 Start Random Test
-                {/* TypeForge Logo Symbol - Blurred */}
+                {/* TypingPath Logo Symbol - Blurred */}
                 <div className="absolute top-1 right-2 opacity-20 blur-[1px]">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/40">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -297,7 +297,7 @@ const LessonSelector = ({
                                 <path d="M5 12h14"/>
                                 <path d="m12 5 7 7-7 7"/>
                               </svg>
-                              {/* TypeForge Logo Symbol - Blurred */}
+                              {/* TypingPath Logo Symbol - Blurred */}
                               <div className="absolute top-2 right-2 opacity-20 blur-[1px]">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent/40">
                                   <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -352,7 +352,7 @@ const LessonSelector = ({
                               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transform transition-transform duration-200 ${expandedLessonId === lesson.id ? 'rotate-90' : 'rotate-0'}`}>
                                 <polyline points="9 18 15 12 9 6"/>
                               </svg>
-                              {/* TypeForge Logo Symbol - Blurred */}
+                              {/* TypingPath Logo Symbol - Blurred */}
                               <div className="absolute top-2 right-2 opacity-20 blur-[1px]">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent/40">
                                   <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -378,7 +378,7 @@ const LessonSelector = ({
                                       <span>Drill {index + 1}</span>
                                       <div className="flex items-center gap-2">
                                         {isProgressLoaded && <ProgressTick tier={performance?.tier} />}
-                                        {/* TypeForge Logo Symbol - Blurred */}
+                                        {/* TypingPath Logo Symbol - Blurred */}
                                         <div className="absolute top-1 right-1 opacity-20 blur-[1px]">
                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent/40">
                                             <path d="M12 2L2 7l10 5 10-5-10-5z"/>

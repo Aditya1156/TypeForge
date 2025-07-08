@@ -64,7 +64,7 @@ const Results = ({ wpm, accuracy, consistency, errors, onRestart, onGetAiAnalysi
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
           Try Again (Tab)
-          {/* TypeForge Logo Symbol - Blurred */}
+          {/* TypingPath Logo Symbol - Blurred */}
           <div className="absolute top-1 right-2 opacity-20 blur-[1px]">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary/40">
               <path d="M12 2L2 7l10 5 10-5-10-5z"/>

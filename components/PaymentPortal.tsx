@@ -36,7 +36,7 @@ const PaymentPortal: React.FC<PaymentPortalProps> = ({ tier, onSuccess, onCancel
 
   // Demo gift codes - same as in GiftCodeRedemption
   const DEMO_GIFT_CODES = [
-    { code: 'TYPEFORGE2024', tier: 'premium' as SubscriptionTier, isUsed: false },
+    { code: 'TYPINGPATH2024', tier: 'premium' as SubscriptionTier, isUsed: false },
     { code: 'PREMIUM50OFF', tier: 'premium' as SubscriptionTier, isUsed: false },
     { code: 'BETA-ACCESS-001', tier: 'pro' as SubscriptionTier, isUsed: false },
     { code: 'EARLY-ADOPTER', tier: 'premium' as SubscriptionTier, isUsed: false },

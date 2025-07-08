@@ -75,21 +75,8 @@ const AppHeader = ({ onShowModal, onOpenSidebar }: AppHeaderProps) => {
     <header className={`fixed top-0 left-0 right-0 w-full bg-secondary/30 backdrop-blur-sm border-b border-border-primary z-50 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left side - Menu button and User Profile */}
-          <div className="flex items-center space-x-2">
-            {/* Menu Button */}
-            <button 
-              onClick={onOpenSidebar}
-              className="p-2 rounded-md text-text-primary hover:bg-white/5 transition-colors"
-              aria-label="Open menu"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" x2="20" y1="6"></line>
-                <line x1="4" x2="20" y1="12"></line>
-                <line x1="4" x2="20" y1="18"></line>
-              </svg>
-            </button>
-
+          {/* Left side - User Profile */}
+          <div className="flex items-center">
             {/* User Profile */}
             <button 
               onClick={() => {
@@ -146,7 +133,7 @@ const AppHeader = ({ onShowModal, onOpenSidebar }: AppHeaderProps) => {
             </div>
           </div>
 
-          {/* Right side - Session Limits / Upgrade */}
+          {/* Right side - Session Limits + Menu */}
           <div className="flex items-center space-x-3">
             {/* Mobile time stats */}
             <div className="md:hidden flex items-center space-x-2 px-2 py-1 bg-tertiary/50 rounded text-xs">
@@ -198,6 +185,24 @@ const AppHeader = ({ onShowModal, onOpenSidebar }: AppHeaderProps) => {
                 <span className="text-sm text-accent font-medium">Unlimited</span>
               </div>
             )}
+
+            {/* Professional Menu Button - Right Corner */}
+            <button 
+              onClick={onOpenSidebar}
+              className="p-3 rounded-lg bg-tertiary/30 hover:bg-tertiary/60 border border-border-primary/20 hover:border-accent/30 transition-all duration-300 group"
+              aria-label="Open menu"
+            >
+              <svg 
+                className="w-5 h-5 text-text-secondary group-hover:text-accent transition-colors duration-300" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+                <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+                <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

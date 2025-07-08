@@ -9,40 +9,40 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     const [caretStyle, setCaretStyleState] = useState<CaretStyle>('line');
 
     useEffect(() => {
-        const storedTheme = localStorage.getItem('typeforge-theme') as Theme | null;
+        const storedTheme = localStorage.getItem('typingpath-theme') as Theme | null;
         if (storedTheme) {
             setThemeState(storedTheme);
         } else {
             // Default to dark theme if no stored preference
             setThemeState('dark');
-            localStorage.setItem('typeforge-theme', 'dark');
+            localStorage.setItem('typingpath-theme', 'dark');
             document.documentElement.setAttribute('data-theme', 'dark');
         }
 
-        const storedSound = localStorage.getItem('typeforge-sound');
+        const storedSound = localStorage.getItem('typingpath-sound');
         if (storedSound) setIsSoundEnabled(JSON.parse(storedSound));
 
-        const storedCaret = localStorage.getItem('typeforge-caret') as CaretStyle | null;
+        const storedCaret = localStorage.getItem('typingpath-caret') as CaretStyle | null;
         if (storedCaret) setCaretStyleState(storedCaret);
     }, []);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
-        localStorage.setItem('typeforge-theme', newTheme);
+        localStorage.setItem('typingpath-theme', newTheme);
         document.documentElement.setAttribute('data-theme', newTheme);
     };
 
     const toggleSound = useCallback(() => {
         setIsSoundEnabled(prev => {
             const newState = !prev;
-            localStorage.setItem('typeforge-sound', JSON.stringify(newState));
+            localStorage.setItem('typingpath-sound', JSON.stringify(newState));
             return newState;
         });
     }, []);
 
     const setCaretStyle = (newStyle: CaretStyle) => {
         setCaretStyleState(newStyle);
-        localStorage.setItem('typeforge-caret', newStyle);
+        localStorage.setItem('typingpath-caret', newStyle);
     };
     
     // Apply theme on initial load

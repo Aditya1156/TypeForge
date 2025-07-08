@@ -86,7 +86,7 @@ class ErrorBoundary extends Component<Props, State> {
               <p className="text-sm text-text-secondary">
                 If this problem persists, please{' '}
                 <a 
-                  href="mailto:support@typeforge.com" 
+                  href="mailto:support@typingpath.com" 
                   className="text-accent hover:underline"
                 >
                   contact support

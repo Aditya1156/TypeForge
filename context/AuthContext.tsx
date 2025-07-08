@@ -188,10 +188,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
+    const handlePremiumStatusRefresh = async () => {
+      if (user && user.uid !== 'guest') {
+        try {
+          console.log('[Auth Context] Refreshing premium status from Firestore...');
+          const latestUser = await userService.loadUserData(user.uid);
+          if (latestUser && latestUser.subscription.tier !== user.subscription.tier) {
+            console.log('[Auth Context] Premium status changed:', user.subscription.tier, '->', latestUser.subscription.tier);
+            setUser(latestUser);
+            addToast(`Subscription status updated to ${latestUser.subscription.tier}!`, 'info');
+          }
+        } catch (error) {
+          console.warn('[Auth Context] Failed to refresh premium status:', error);
+        }
+      }
+    };
+
     window.addEventListener('userDataRefreshed', handleUserDataRefresh as any);
+    window.addEventListener('refreshPremiumStatus', handlePremiumStatusRefresh);
     
     return () => {
       window.removeEventListener('userDataRefreshed', handleUserDataRefresh as any);
+      window.removeEventListener('refreshPremiumStatus', handlePremiumStatusRefresh);
     };
   }, [user, addToast]);
 

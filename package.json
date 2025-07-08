@@ -1,5 +1,5 @@
 {
-  "name": "typeforge-modern-typing-master",
+  "name": "typingpath-modern-typing-master",
   "version": "2.0.0",
   "description": "A sophisticated, AI-powered typing practice application with analytics dashboard and personalized coaching",
   "private": false,
@@ -18,11 +18,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Aditya1156/TypeForge.git"
+    "url": "https://github.com/Aditya1156/TypingPath.git"
   },
-  "homepage": "https://github.com/Aditya1156/TypeForge#readme",
+  "homepage": "https://github.com/Aditya1156/TypingPath#readme",
   "bugs": {
-    "url": "https://github.com/Aditya1156/TypeForge/issues"
+    "url": "https://github.com/Aditya1156/TypingPath/issues"
   },
   "scripts": {
     "dev": "vite",

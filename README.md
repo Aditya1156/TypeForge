@@ -1,8 +1,8 @@
-# TypeForge - Modern Typing Master 🚀
+# TypingPath - Modern Typing Master 🚀
 
-A sophisticated, AI-powered typing practice application built with React, TypeScript, and Vite. TypeForge combines modern web technologies with gamification elements and AI coaching to create an engaging typing improvement experience.
+A sophisticated, AI-powered typing practice application built with React, TypeScript, and Vite. TypingPath combines modern web technologies with gamification elements and AI coaching to create an engaging typing improvement experience.
 
-![TypeForge Demo](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![TypingPath Demo](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
@@ -78,8 +78,8 @@ A sophisticated, AI-powered typing practice application built with React, TypeSc
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Aditya1156/TypeForge.git
-   cd TypeForge
+   git clone https://github.com/Aditya1156/TypingPath.git
+   cd TypingPath
    ```
 
 2. **Install dependencies:**
@@ -111,7 +111,7 @@ npm run preview
 ## 🏗️ Project Structure
 
 ```
-TypeForge/
+TypingPath/
 ├── src/
 │   ├── components/           # React components
 │   │   ├── dashboard/       # Analytics dashboard components
@@ -204,12 +204,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Google Gemini AI** for intelligent coaching capabilities
 - **Tailwind CSS** for the beautiful, responsive design system
 - **React Community** for the excellent ecosystem and tools
-- **Contributors** who help make TypeForge better
+- **Contributors** who help make TypingPath better
 
 ## 👨‍💻 Developer
 
 **Aditya Kumar**  
-Full Stack Developer & TypeForge Creator
+Full Stack Developer & TypingPath Creator
 
 - 📧 Email: [adityaissc7@gmail.com](mailto:adityaissc7@gmail.com)
 - 🐙 GitHub: [@Aditya1156](https://github.com/Aditya1156)
@@ -219,8 +219,8 @@ Full Stack Developer & TypeForge Creator
 
 ## 📞 Support & Feedback
 
-- **Issues**: [GitHub Issues](https://github.com/Aditya1156/TypeForge/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Aditya1156/TypeForge/discussions)
+- **Issues**: [GitHub Issues](https://github.com/Aditya1156/TypingPath/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Aditya1156/TypingPath/discussions)
 - **Developer**: Aditya Kumar - [adityaissc7@gmail.com](mailto:adityaissc7@gmail.com)
 
 ---

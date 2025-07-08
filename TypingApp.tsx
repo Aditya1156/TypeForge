@@ -475,10 +475,12 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
         />
       )}
 
-      {/* App Header */}
-      <AppHeader onShowModal={onShowModal} onOpenSidebar={handleOpenSidebar} />
+      {/* App Header - Only show on main lessons view */}
+      {view === 'lessons' && (
+        <AppHeader onShowModal={onShowModal} onOpenSidebar={handleOpenSidebar} />
+      )}
 
-      <main className="flex-grow flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto pt-24 mt-16">
+      <main className={`flex-grow flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto ${view === 'lessons' ? 'pt-40 mt-8' : 'pt-4'}`}>
         <SessionLimitGuard onUpgrade={handleUpgrade} onSignIn={handleSignIn}>
           {renderContent()}
         </SessionLimitGuard>

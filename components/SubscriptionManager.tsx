@@ -313,7 +313,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose }) =>
           Contact our support team for personalized recommendations
         </p>
         <div className="flex justify-center space-x-4">
-          <a href="mailto:support@typeforge.com" className="text-accent hover:underline">
+          <a href="mailto:support@typingpath.com" className="text-accent hover:underline">
             Email Support
           </a>
           <span className="text-text-secondary">•</span>

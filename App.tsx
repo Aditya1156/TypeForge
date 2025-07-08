@@ -4,6 +4,7 @@ import TypingApp from './TypingApp';
 import ToastContainer from './components/ToastContainer';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
+
 import { useAuth } from './context/AuthContext';
 import { useSettings } from './context/SettingsContext';
 import { useToast } from './context/ToastContext';

@@ -49,7 +49,7 @@ const Testimonials = () => (
           Loved by Typists Worldwide
         </h2>
         <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-          Join thousands of users who have improved their typing speed and accuracy with TypeForge.
+          Join thousands of users who have improved their typing speed and accuracy with TypingPath.
         </p>
       </div>
 
@@ -58,7 +58,7 @@ const Testimonials = () => (
           name="Sarah Chen"
           role="Software Developer"
           company="TechCorp"
-          content="TypeForge's AI coach is incredible! It identified my weak spots and created custom drills that improved my coding speed by 40% in just 3 weeks. The analytics dashboard keeps me motivated."
+          content="TypingPath's AI coach is incredible! It identified my weak spots and created custom drills that improved my coding speed by 40% in just 3 weeks. The analytics dashboard keeps me motivated."
           avatar="SC"
           rating={5}
         />
@@ -67,7 +67,7 @@ const Testimonials = () => (
           name="Marcus Johnson"
           role="Content Writer"
           company="Digital Agency"
-          content="As a professional writer, typing speed is crucial. TypeForge helped me go from 45 WPM to 75 WPM. The structured lessons and beautiful themes make practice enjoyable."
+          content="As a professional writer, typing speed is crucial. TypingPath helped me go from 45 WPM to 75 WPM. The structured lessons and beautiful themes make practice enjoyable."
           avatar="MJ"
           rating={5}
         />

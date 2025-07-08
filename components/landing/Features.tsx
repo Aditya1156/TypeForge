@@ -12,7 +12,7 @@ const Features = () => (
   <section id="features" className="py-24 bg-primary text-text-primary">
     <div className="container mx-auto px-4">
       <div className="text-center mb-16">
-        <h2 className="text-4xl sm:text-5xl font-bold mb-4">Why Choose TypeForge?</h2>
+        <h2 className="text-4xl sm:text-5xl font-bold mb-4">Why Choose TypingPath?</h2>
         <p className="text-xl text-text-secondary mt-2 max-w-3xl mx-auto">
           More than just a speed test. A complete AI-powered typing mastery platform designed for modern learners.
         </p>

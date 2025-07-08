@@ -73,7 +73,7 @@ const Pricing = ({ onStartTyping }: { onStartTyping: () => void }) => (
           Choose Your Learning Path
         </h2>
         <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-          From free practice to professional mastery. TypeForge grows with your typing journey.
+          From free practice to professional mastery. TypingPath grows with your typing journey.
         </p>
       </div>
 
@@ -131,7 +131,7 @@ const Pricing = ({ onStartTyping }: { onStartTyping: () => void }) => (
             "24/7 priority support"
           ]}
           buttonText="Contact Sales"
-          onGetStarted={() => window.open('mailto:adityaissc7@gmail.com?subject=TypeForge Enterprise Inquiry', '_blank')}
+          onGetStarted={() => window.open('mailto:adityaissc7@gmail.com?subject=TypingPath Enterprise Inquiry', '_blank')}
         />
       </div>
 

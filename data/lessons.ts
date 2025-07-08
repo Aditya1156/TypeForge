@@ -4,7 +4,7 @@ export const chapters: Chapter[] = [
   {
     id: "chapter-0",
     name: "Chapter 0: The Starting Line",
-    description: "Welcome to TypeForge! Let's get your hands in the right position.",
+    description: "Welcome to TypingPath! Let's get your hands in the right position.",
     lessons: [
       {
         id: "0-1",
@@ -1277,13 +1277,13 @@ print(status)`,
         name: "Ellipsis, Copyright, & More",
         texts: [
           "He paused and said, “I’m not sure…” and trailed off.",
-          "The copyright for this work is © 2024 TypeForge.",
-          "The company name is TypeForge™, a registered trademark®.",
+          "The copyright for this work is © 2024 TypingPath.",
+          "The company name is TypingPath™, a registered trademark®.",
           "And so on, and so forth… you get the idea.",
           "The temperature was 32 °F (0 °C).",
           "The formula is E=mc², a famous equation.",
           "This product is patent pending… please wait for the final release.",
-          "© 2024. All rights reserved. The TypeForge™ brand is protected.",
+          "© 2024. All rights reserved. The TypingPath™ brand is protected.",
           "The recipe calls for 2 cups of flour, 1 cup of sugar, etc…",
           "The ellipsis (…) indicates an omission or a pause.",
           "The ® symbol denotes a registered trademark.",
