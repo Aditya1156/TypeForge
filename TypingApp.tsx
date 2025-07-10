@@ -481,7 +481,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
       )}
 
       <main className={`flex-grow flex flex-col items-center p-4 sm:p-6 lg:p-8 overflow-y-auto ${view === 'lessons' ? 'pt-40 mt-8' : 'pt-4'}`}>
-        <SessionLimitGuard onUpgrade={handleUpgrade} onSignIn={handleSignIn}>
+        <SessionLimitGuard onUpgrade={handleUpgrade} onSignIn={handleSignIn} currentView={view}>
           {renderContent()}
         </SessionLimitGuard>
       </main>
