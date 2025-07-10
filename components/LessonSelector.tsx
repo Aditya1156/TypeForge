@@ -64,9 +64,9 @@ const LessonSelector = ({
   };
 
   return (
-    <div className="min-h-screen bg-primary text-text-primary">
+    <div className="w-full">
       {/* Header */}
-      <header className="bg-secondary border-b border-border-primary">
+      <header className="bg-secondary border-b border-border-primary mb-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
           {onBackToHome && (
             <button

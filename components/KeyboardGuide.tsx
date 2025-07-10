@@ -163,8 +163,8 @@ const KeyboardGuide = ({ onStartFirstLesson, onBackToMenu }: { onStartFirstLesso
   const nextChar = drillText[typed.length];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-text-primary p-4">
-      <header className="relative w-full max-w-6xl text-center mb-6">
+    <div className="w-full max-w-6xl mx-auto">
+      <header className="relative text-center mb-6">
         {/* Back button */}
         <button 
           onClick={onBackToMenu}
@@ -191,7 +191,7 @@ const KeyboardGuide = ({ onStartFirstLesson, onBackToMenu }: { onStartFirstLesso
         <h2 className="text-2xl text-accent mt-2">{currentStep.title}</h2>
       </header>
 
-      <main className="w-full max-w-6xl flex flex-col items-center gap-6 p-6 bg-secondary rounded-lg shadow-lg">
+      <main className="flex flex-col items-center gap-6 p-6 bg-secondary rounded-lg shadow-lg">
         <p className="text-center text-lg max-w-3xl text-text-secondary">{currentStep.description}</p>
         
         <div className="relative w-full max-w-5xl">
