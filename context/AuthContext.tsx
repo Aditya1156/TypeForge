@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
+import firebase from "firebase/compat/app";
 import { auth } from '../firebaseConfig';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
@@ -102,6 +103,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           setUser(userData);
+
+          // Initialize or validate session for existing users
+          try {
+            const sessionExists = await enhancedSessionService.validateExistingSession();
+            if (!sessionExists && firebaseUser) {
+              // Create session for existing authenticated user
+              const sessionConfig: SessionConfig = {
+                rememberMe: true, // Assume true since user is already authenticated
+                sessionDuration: 7, // Default 7 days
+                autoLogin: true,
+                trustedDevice: true // Assume trusted since they're already logged in
+              };
+              await enhancedSessionService.createSession(firebaseUser, sessionConfig);
+              console.log('Session created for existing authenticated user');
+            }
+          } catch (sessionError) {
+            console.warn('Could not initialize session:', sessionError);
+            // Continue anyway - user is still authenticated
+          }
 
           // Show success message for new users (both Google and email/password)
           const wasSigningIn = secureSessionStorage.get('signingIn');
@@ -215,11 +235,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = useCallback(async (email: string, password: string, trustedDevice: boolean = false) => {
     try {
+      // Set Firebase persistence based on trusted device setting
+      if (trustedDevice) {
+        // Trust this device - persist across browser restarts
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      } else {
+        // Don't trust - only persist during browser session
+        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+      }
+      
       // Use enhanced session service for sign-in with trusted device functionality
       const sessionConfig: Partial<SessionConfig> = {
         trustedDevice,
         rememberMe: trustedDevice,
-        sessionDuration: trustedDevice ? 10 : 1, // 10 days if trusted, 1 day otherwise
+        sessionDuration: trustedDevice ? 30 : 1, // 30 days if trusted, 1 day otherwise
         autoLogin: trustedDevice
       };
       
@@ -230,9 +259,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Set user state immediately for faster UI update
       setUser(signedInUser);
       const displayName = signedInUser.name || signedInUser.email?.split('@')[0] || 'User';
-      addToast(`Welcome back, ${displayName}!`, 'success');
+      
+      if (trustedDevice) {
+        addToast(`Welcome back, ${displayName}! Device trusted for 30 days.`, 'success');
+      } else {
+        addToast(`Welcome back, ${displayName}!`, 'success');
+      }
+      
       return signedInUser;
     } catch (error: any) {
+      // Reset persistence to session on error
+      await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(e => 
+        console.warn('Could not reset persistence:', e)
+      );
       addToast(error.message, 'error');
       throw error;
     }
@@ -262,10 +301,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [addToast]);
 
-  const signOut = useCallback(() => {
-    authService.signOut().then(() => {
-        addToast('You have been signed out.', 'info');
-    });
+  const signOut = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Clear user state immediately to prevent flickering
+      setUser(null);
+      
+      // Call the enhanced signOut that clears all storage
+      await authService.signOut();
+      
+      // Broadcast sign out to other tabs
+      try {
+        localStorage.setItem('firebase_auth_signout', JSON.stringify({
+          timestamp: Date.now(),
+          action: 'signout'
+        }));
+        // Clean up the broadcast message
+        setTimeout(() => {
+          localStorage.removeItem('firebase_auth_signout');
+        }, 1000);
+      } catch (e) {
+        console.warn('Could not broadcast signout:', e);
+      }
+      
+      addToast('You have been signed out successfully.', 'success');
+    } catch (error: any) {
+      console.error('Sign out error:', error);
+      addToast('Sign out completed with some issues.', 'info');
+      // Still consider it successful since user state is cleared
+    } finally {
+      setIsLoading(false);
+    }
   }, [addToast]);
 
   const updateProfile = useCallback(async (name: string) => {

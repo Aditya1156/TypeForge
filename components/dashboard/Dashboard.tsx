@@ -5,6 +5,7 @@ import DashboardTabs from './DashboardTabs';
 import LoadingSpinner from '../LoadingSpinner';
 import TimerWidget from '../TimerWidget';
 import StatsCards from './StatsCards';
+import CurriculumProgress from './CurriculumProgress';
 import type { Progress, Lesson } from '../../types';
 
 interface DashboardProps {
@@ -12,9 +13,10 @@ interface DashboardProps {
     isProgressLoaded: boolean;
     onSelectDrill: (lesson: Lesson, drillIndex: number) => void;
     onUpgrade?: () => void;
+    onSelectChapter?: (chapterNumber: number) => void;
 }
 
-const Dashboard = memo(({ progress, isProgressLoaded, onSelectDrill, onUpgrade }: DashboardProps) => {
+const Dashboard = memo(({ progress, isProgressLoaded, onSelectDrill, onUpgrade, onSelectChapter }: DashboardProps) => {
     const { user } = useAuth();
 
     // Memoize performance entries to prevent recalculation on every render
@@ -106,6 +108,16 @@ const Dashboard = memo(({ progress, isProgressLoaded, onSelectDrill, onUpgrade }
             <section className="space-y-4">
                 <h2 className="text-xl font-semibold text-text-primary">Performance Overview</h2>
                 <StatsCards performanceEntries={performanceEntries} />
+            </section>
+            
+            {/* Curriculum Progress - Available to all users */}
+            <section className="space-y-4">
+                <h2 className="text-xl font-semibold text-text-primary">Curriculum Progress</h2>
+                <CurriculumProgress 
+                    progress={progress} 
+                    isProgressLoaded={isProgressLoaded}
+                    onSelectChapter={onSelectChapter}
+                />
             </section>
             
             {/* Timer Widget - Basic for all users */}

@@ -39,7 +39,7 @@ class EnhancedSessionService {
   private readonly DEFAULT_CONFIG: SessionConfig = {
     rememberMe: false,
     sessionDuration: 7, // 7 days default
-    autoLogin: true,
+    autoLogin: false, // Changed to false - no automatic login
     trustedDevice: false
   };
 

@@ -19,7 +19,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import SessionLimitGuard from './components/SessionLimitGuard';
 import type { AiAnalysis, Lesson, PracticeMode, ModalType } from './types';
 import { calculateAccuracy } from './utils/helpers';
-import { chapters } from './data/lessons';
+import { optimizedChapters as chapters } from './data/optimized-lessons';
 
 const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; onShowModal: (modal: ModalType) => void; }) => {
   const [view, setView] = useState<'lessons' | 'test' | 'guide' | 'dashboard'>('lessons');
@@ -159,6 +159,13 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
     resetAiState();
   }, [restart]);
 
+  // Handle chapter selection from dashboard
+  const handleSelectChapter = useCallback((chapterNumber: number) => {
+    setView('lessons');
+    // Scroll to the specific chapter
+    // We can implement chapter scrolling in the LessonSelector later
+  }, []);
+  
   const handleNavigate = (newView: 'lessons' | 'guide' | 'dashboard') => {
     saveScrollPosition(view);
     setPreviousView(view);
@@ -365,7 +372,7 @@ const TypingApp = ({ onGoToLanding, onShowModal }: { onGoToLanding: () => void; 
                 <span className="text-accent">Dashboard</span>
               </nav>
             </div>
-            <Dashboard progress={progress} isProgressLoaded={isProgressLoaded} onSelectDrill={handleSelectDrill} onUpgrade={handleUpgrade} />
+            <Dashboard progress={progress} isProgressLoaded={isProgressLoaded} onSelectDrill={handleSelectDrill} onUpgrade={handleUpgrade} onSelectChapter={handleSelectChapter} />
           </div>
         );
       case 'test':

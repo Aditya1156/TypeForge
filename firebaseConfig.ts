@@ -20,9 +20,9 @@ const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : fir
 const auth = app.auth();
 const db = app.firestore();
 
-// Configure Firebase Auth to persist authentication state across tabs
-// This ensures that authentication tokens are shared properly between browser tabs
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+// Set default persistence to SESSION (only for current browser session)
+// This prevents automatic login after browser restart
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
 // Force immediate auth state synchronization for new tabs
 if (typeof window !== 'undefined') {
@@ -47,6 +47,10 @@ if (typeof window !== 'undefined') {
     if (e.key === 'firebase_auth_state_change') {
       console.log('[Firebase Config] Received auth state change from another tab');
       // The auth state will automatically sync, we just log it
+    } else if (e.key === 'firebase_auth_signout') {
+      console.log('[Firebase Config] Received signout signal from another tab');
+      // Force signout in this tab too
+      auth.signOut().catch(err => console.warn('Cross-tab signout failed:', err));
     }
   });
 }

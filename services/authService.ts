@@ -137,7 +137,39 @@ export const authService = {
   },
 
   signOut: async (): Promise<void> => {
-    return auth.signOut();
+    try {
+      // Clear all local storage and session storage related to auth
+      localStorage.removeItem('firebase_auth_state_change');
+      localStorage.removeItem('typer_session_data');
+      localStorage.removeItem('typer_session_config');
+      localStorage.removeItem('typer_trusted_devices');
+      localStorage.removeItem('typer_last_activity');
+      
+      // Clear session storage
+      sessionStorage.clear();
+      
+      // Clear any secure session storage
+      if (typeof window !== 'undefined') {
+        try {
+          const keys = Object.keys(sessionStorage);
+          keys.forEach(key => {
+            if (key.includes('typer_') || key.includes('firebase_')) {
+              sessionStorage.removeItem(key);
+            }
+          });
+        } catch (e) {
+          console.warn('Could not clear session storage:', e);
+        }
+      }
+      
+      // Sign out from Firebase Auth
+      await auth.signOut();
+      
+      console.log('Complete sign out successful');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
   },
 
   updateProfile: async (name: string): Promise<void> => {

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import PremiumBadge from '../PremiumBadge';
 import LoadingSpinner from '../LoadingSpinner';
+import SignOutConfirmation from './SignOutConfirmation';
 import { validatePassword, sanitizeInput } from '../../utils/security';
 
 interface ProfileProps {
@@ -10,9 +11,10 @@ interface ProfileProps {
 }
 
 const Profile = ({ onClose }: ProfileProps) => {
-  const { user, signOut, updateProfile, updatePassword } = useAuth();
+  const { user, updateProfile, updatePassword } = useAuth();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showSignOutConfirmation, setShowSignOutConfirmation] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -21,8 +23,7 @@ const Profile = ({ onClose }: ProfileProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignOut = () => {
-    signOut();
-    onClose();
+    setShowSignOutConfirmation(true);
   };
 
   const handleUpdateName = async (e: React.FormEvent) => {
@@ -272,14 +273,24 @@ const Profile = ({ onClose }: ProfileProps) => {
           )}
         </div>
 
-        <button 
-          onClick={handleSignOut} 
-          className="w-full mt-8 flex justify-center items-center px-6 py-3 font-semibold text-white bg-danger rounded-md hover:bg-danger/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-secondary focus:ring-danger transition-colors"
-        >
-          Sign Out
-        </button>
+        <div className="flex gap-3 mt-8">
+          <button 
+            onClick={handleSignOut} 
+            className="flex-1 flex justify-center items-center px-6 py-3 font-semibold text-white bg-danger rounded-md hover:bg-danger/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-secondary focus:ring-danger transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
 
       </div>
+      
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirmation && (
+        <SignOutConfirmation 
+          onClose={() => setShowSignOutConfirmation(false)}
+          onConfirm={onClose}
+        />
+      )}
     </div>
   );
 };

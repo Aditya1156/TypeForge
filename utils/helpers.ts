@@ -283,3 +283,123 @@ export const isKeyboardCode = (code: string): boolean => {
         code === 'Space'
     );
 };
+
+/**
+ * Calculates the progress statistics for a chapter based on completed drills.
+ * @param chapterNumber The chapter number (1-30).
+ * @param progress The user's progress object.
+ * @returns Chapter progress statistics.
+ */
+export const getChapterProgress = (chapterNumber: number, progress: Record<string, any>) => {
+  const chapterDrills = Object.keys(progress).filter(drillId => 
+    drillId.startsWith(`${chapterNumber}-`)
+  );
+  
+  const totalDrills = 15; // Each chapter has 15 drills
+  const completedDrills = chapterDrills.length;
+  const masteredDrills = chapterDrills.filter(drillId => 
+    progress[drillId]?.tier === 'mastered'
+  ).length;
+  const proficientDrills = chapterDrills.filter(drillId => 
+    progress[drillId]?.tier === 'proficient'
+  ).length;
+  
+  const completionPercentage = Math.round((completedDrills / totalDrills) * 100);
+  const masteryPercentage = Math.round((masteredDrills / totalDrills) * 100);
+  
+  return {
+    totalDrills,
+    completedDrills,
+    masteredDrills,
+    proficientDrills,
+    completionPercentage,
+    masteryPercentage,
+    isCompleted: completedDrills === totalDrills,
+    isMastered: masteredDrills === totalDrills
+  };
+};
+
+/**
+ * Calculates overall curriculum progress across all 30 chapters.
+ * @param progress The user's progress object.
+ * @returns Overall curriculum statistics.
+ */
+export const getOverallProgress = (progress: Record<string, any>) => {
+  const totalChapters = 30;
+  const totalDrills = totalChapters * 15; // 30 chapters × 15 drills each = 450 total
+  
+  let completedChapters = 0;
+  let masteredChapters = 0;
+  let totalCompletedDrills = Object.keys(progress).length;
+  let totalMasteredDrills = Object.values(progress).filter((p: any) => p.tier === 'mastered').length;
+  
+  // Count completed and mastered chapters
+  for (let i = 1; i <= totalChapters; i++) {
+    const chapterProgress = getChapterProgress(i, progress);
+    if (chapterProgress.isCompleted) completedChapters++;
+    if (chapterProgress.isMastered) masteredChapters++;
+  }
+  
+  const overallCompletionPercentage = Math.round((totalCompletedDrills / totalDrills) * 100);
+  const overallMasteryPercentage = Math.round((totalMasteredDrills / totalDrills) * 100);
+  const chapterCompletionPercentage = Math.round((completedChapters / totalChapters) * 100);
+  
+  return {
+    totalChapters,
+    totalDrills,
+    completedChapters,
+    masteredChapters,
+    totalCompletedDrills,
+    totalMasteredDrills,
+    overallCompletionPercentage,
+    overallMasteryPercentage,
+    chapterCompletionPercentage,
+    isFullyCompleted: completedChapters === totalChapters,
+    isFullyMastered: masteredChapters === totalChapters
+  };
+};
+
+/**
+ * Gets the next recommended drill for the user based on their progress.
+ * @param progress The user's progress object.
+ * @returns Recommendation for the next drill to practice.
+ */
+export const getNextRecommendedDrill = (progress: Record<string, any>) => {
+  // Find the first incomplete drill in sequential order
+  for (let chapter = 1; chapter <= 30; chapter++) {
+    for (let drill = 0; drill < 15; drill++) {
+      const drillId = `${chapter}-${drill}`;
+      if (!progress[drillId]) {
+        return {
+          chapterNumber: chapter,
+          drillIndex: drill,
+          drillId,
+          reason: 'Next in sequence'
+        };
+      }
+    }
+  }
+  
+  // If all drills are completed, find the first non-mastered drill
+  for (let chapter = 1; chapter <= 30; chapter++) {
+    for (let drill = 0; drill < 15; drill++) {
+      const drillId = `${chapter}-${drill}`;
+      if (progress[drillId]?.tier !== 'mastered') {
+        return {
+          chapterNumber: chapter,
+          drillIndex: drill,
+          drillId,
+          reason: 'Needs mastery'
+        };
+      }
+    }
+  }
+  
+  // All drills are mastered - suggest practicing the ultimate challenge
+  return {
+    chapterNumber: 30,
+    drillIndex: 14, // The ultimate test
+    drillId: '30-14',
+    reason: 'Ultimate challenge'
+  };
+};

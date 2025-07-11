@@ -78,27 +78,66 @@ const useProgress = (user: User | null) => {
       if (isNewScoreBetter) {
         const updatedProgress = { ...currentProgress, [drillId]: newPerformance };
         
+        // Check for drill completion
+        const isFirstCompletion = !existingPerformance;
+        const achievedMastery = tier === 'mastered' && existingPerformance?.tier !== 'mastered';
+        
+        // Check for chapter completion
+        const chapterNumber = lesson.id.split('-')[0].replace('opt-chapter-', '');
+        const chapterProgress = Object.keys(updatedProgress)
+          .filter(id => id.startsWith(`${chapterNumber}-`))
+          .map(id => updatedProgress[id]);
+        
+        const totalDrillsInChapter = 15; // Each chapter has 15 drills
+        const completedDrills = chapterProgress.length;
+        const masteredDrills = chapterProgress.filter(p => p.tier === 'mastered').length;
+        const isChapterCompleted = completedDrills === totalDrillsInChapter;
+        const isChapterMastered = masteredDrills === totalDrillsInChapter;
+
+        // Show appropriate success messages
+        if (achievedMastery) {
+          addToast(`🎉 Drill ${drillIndex + 1} mastered! WPM: ${wpm}, Accuracy: ${accuracy}%`, 'success');
+        } else if (isFirstCompletion) {
+          addToast(`✅ Drill ${drillIndex + 1} completed! WPM: ${wpm}, Accuracy: ${accuracy}%`, 'success');
+        }
+
+        // Chapter completion messages
+        if (isChapterCompleted && completedDrills === totalDrillsInChapter) {
+          const chapterNumber = lesson.id.split('-')[0];
+          addToast(`🏆 Chapter ${chapterNumber} completed! All 15 drills finished!`, 'success');
+        }
+        
+        if (isChapterMastered && masteredDrills === totalDrillsInChapter) {
+          const chapterNumber = lesson.id.split('-')[0];
+          addToast(`👑 Chapter ${chapterNumber} MASTERED! Perfect performance on all drills!`, 'success');
+        }
+        
         // Only try to save to cloud if Firebase is available and user is authenticated
         if (firebaseAvailable && user && user.uid !== 'guest') {
           const progressDocRef = db.collection('progress').doc(user.uid);
           progressDocRef.set({ [drillId]: newPerformance }, { merge: true })
             .then(() => {
-                addToast('New personal best saved!', 'success');
+              if (!isFirstCompletion && !achievedMastery) {
+                addToast('Progress saved to cloud!', 'success');
+              }
             })
             .catch(error => {
               console.error("Failed to save progress to Firestore", error);
-              addToast('Personal best saved locally!', 'success');
+              addToast('Progress saved locally!', 'info');
             });
-        } else {
-          addToast('Personal best saved!', 'success');
         }
         
         return updatedProgress;
+      } else {
+        // Show encouragement for attempts that don't improve the score
+        if (existingPerformance) {
+          addToast(`Keep practicing! Best: ${existingPerformance.wpm} WPM, ${existingPerformance.accuracy}%`, 'info');
+        }
       }
       
       return currentProgress; // No change, return same reference
     });
-  }, [user?.uid, addToast, firebaseAvailable]); // Only depend on user.uid
+  }, [user?.uid, addToast, firebaseAvailable]);
 
   const resetProgress = useCallback(async () => {
     setProgress(currentProgress => {
