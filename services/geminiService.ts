@@ -1,17 +1,17 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AiAnalysis, ErrorDetail, PracticeMode } from "../types";
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
 if (!API_KEY) {
-    console.error("Gemini API key is not set. Please set the process.env.API_KEY environment variable.");
+    console.error("Gemini API key is not set. Please set the GEMINI_API_KEY environment variable.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMode): Promise<string> => {
-    if (!API_KEY) {
+    if (!API_KEY || !genAI) {
         return Promise.resolve("API Key not configured. Cannot generate drill.");
     }
 
@@ -31,12 +31,11 @@ export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMo
     `;
     
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17",
-            contents: prompt,
-        });
-
-        return response.text?.trim() || "";
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        
+        return response.text()?.trim() || "";
     } catch (error) {
         console.error("Failed to fetch AI custom drill:", error);
         throw new Error("The AI failed to generate a drill. Please try again.");
@@ -44,7 +43,7 @@ export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMo
 };
 
 export const fetchAiAnalysis = async (errors: ErrorDetail[]): Promise<AiAnalysis | null> => {
-    if (!API_KEY) {
+    if (!API_KEY || !genAI) {
         return Promise.resolve({
             analysis: "API Key not configured. Please contact support.",
             drill: ["check", "your", "environment", "variables"]
@@ -63,15 +62,17 @@ export const fetchAiAnalysis = async (errors: ErrorDetail[]): Promise<AiAnalysis
     `;
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17",
-            contents: prompt,
-            config: {
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            generationConfig: {
                 responseMimeType: "application/json",
-            },
+            }
         });
         
-        let jsonStr = response.text?.trim() || "";
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        
+        let jsonStr = response.text()?.trim() || "";
         const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
         const match = jsonStr.match(fenceRegex);
         if (match && match[2]) {
