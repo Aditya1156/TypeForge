@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
             manualChunks: {
               vendor: ['react', 'react-dom'],
               firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-              ai: ['@google/genai'],
+              ai: ['@google/generative-ai'],
               'auth-components': [
                 './components/auth/SignIn.tsx',
                 './components/auth/SignUp.tsx',

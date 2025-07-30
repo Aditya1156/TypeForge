@@ -273,7 +273,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          ai: ['@google/genai'],
+          ai: ['@google/generative-ai'],
           firebase: ['firebase/app', 'firebase/auth']
         }
       }
