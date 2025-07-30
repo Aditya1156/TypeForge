@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AiAnalysis, ErrorDetail, PracticeMode } from "../types";
 
 const API_KEY = process.env.API_KEY;
@@ -8,7 +8,7 @@ if (!API_KEY) {
     console.error("Gemini API key is not set. Please set the process.env.API_KEY environment variable.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const ai = new GoogleGenerativeAI(API_KEY || "");
 
 export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMode): Promise<string> => {
     if (!API_KEY) {
@@ -31,12 +31,10 @@ export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMo
     `;
     
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17",
-            contents: prompt,
-        });
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const response = await model.generateContent(prompt);
 
-        return response.text?.trim() || "";
+        return response.response.text()?.trim() || "";
     } catch (error) {
         console.error("Failed to fetch AI custom drill:", error);
         throw new Error("The AI failed to generate a drill. Please try again.");
@@ -63,15 +61,15 @@ export const fetchAiAnalysis = async (errors: ErrorDetail[]): Promise<AiAnalysis
     `;
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17",
-            contents: prompt,
-            config: {
+        const model = ai.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            generationConfig: {
                 responseMimeType: "application/json",
             },
         });
+        const response = await model.generateContent(prompt);
         
-        let jsonStr = response.text?.trim() || "";
+        let jsonStr = response.response.text()?.trim() || "";
         const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
         const match = jsonStr.match(fenceRegex);
         if (match && match[2]) {

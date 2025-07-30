@@ -45,7 +45,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/genai": "^1.8.0",
+    "@google/generative-ai": "^0.21.0",
     "firebase": "^11.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
