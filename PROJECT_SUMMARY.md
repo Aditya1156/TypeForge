@@ -1,5 +1,4 @@
 # TypingPath - Quick Project Overview
-
 ## 👨‍💻 Developer
 **Aditya Kumar**  
 📧 typingpath@gmail.com | 💼 adityaissc7@gmail.com  
