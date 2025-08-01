@@ -16,7 +16,7 @@
 - **Website:** [typingpath.com](https://typingpath.com)
 - **Contact Email:** typingpath@gmail.com
 - **Developer Email:** adityaissc7@gmail.com
-- **GitHub Repository:** [TypingPath](https://github.com/Aditya1156/TypeForge.git)
+- **GitHub Repository:** [TypingPath](https://github.com/Aditya1156/TypingPath.git)
 - **Live Demo:** [https://typingpath.com](https://typingpath.com)
 
 ---
@@ -341,7 +341,7 @@ Git Workflow:
 - 🌐 **Website:** [typingpath.com](https://typingpath.com)
 - 📧 **Business Email:** typingpath@gmail.com
 - 👨‍💻 **Developer Email:** adityaissc7@gmail.com
-- 🐙 **GitHub:** [TypingPath Repository](https://github.com/Aditya1156/TypeForge.git)
+- 🐙 **GitHub:** [TypingPath Repository](https://github.com/Aditya1156/TypingPath.git)
 - 💼 **LinkedIn:** Connect for professional inquiries
 
 ### **Support Options**

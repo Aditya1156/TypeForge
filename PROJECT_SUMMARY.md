@@ -3,7 +3,7 @@
 ## 👨‍💻 Developer
 **Aditya Kumar**  
 📧 typingpath@gmail.com | 💼 adityaissc7@gmail.com  
-🌐 [typingpath.com](https://typingpath.com) | 🐙 [GitHub](https://github.com/Aditya1156/TypeForge.git)
+🌐 [typingpath.com](https://typingpath.com) | 🐙 [GitHub](https://github.com/Aditya1156/TypingPath.git)
 
 ---
 

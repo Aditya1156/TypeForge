@@ -150,13 +150,13 @@ http {
 
 ```bash
 # Build image
-docker build -t typeforge .
+docker build -t typingpath .
 
 # Run container
-docker run -p 8080:80 typeforge
+docker run -p 8080:80 typingpath
 
 # With environment variables
-docker run -p 8080:80 -e VITE_GEMINI_API_KEY=your_key typeforge
+docker run -p 8080:80 -e VITE_GEMINI_API_KEY=your_key typingpath
 ```
 
 ## ☁️ Cloud Platform Deployment
