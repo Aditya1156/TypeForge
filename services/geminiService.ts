@@ -2,10 +2,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AiAnalysis, ErrorDetail, PracticeMode } from "../types";
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 if (!API_KEY) {
-    console.error("Gemini API key is not set. Please set the process.env.API_KEY environment variable.");
+    console.error("Gemini API key is not set. Please set the VITE_GEMINI_API_KEY environment variable.");
 }
 
 const ai = new GoogleGenerativeAI(API_KEY || "");
@@ -31,12 +31,21 @@ export const fetchAiCustomDrill = async (difficultKeys: string, mode: PracticeMo
     `;
     
     try {
-        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Try the latest model first, fallback to stable version if needed
+        let model;
+        try {
+            model = ai.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        } catch {
+            model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        }
+        
         const response = await model.generateContent(prompt);
-
         return response.response.text()?.trim() || "";
     } catch (error) {
         console.error("Failed to fetch AI custom drill:", error);
+        if (error instanceof Error && error.message.includes("API_KEY")) {
+            throw new Error("Gemini API key is invalid or not configured. Please check your environment variables.");
+        }
         throw new Error("The AI failed to generate a drill. Please try again.");
     }
 };
@@ -61,12 +70,24 @@ export const fetchAiAnalysis = async (errors: ErrorDetail[]): Promise<AiAnalysis
     `;
 
     try {
-        const model = ai.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            generationConfig: {
-                responseMimeType: "application/json",
-            },
-        });
+        // Try the latest model first, fallback to stable version if needed
+        let model;
+        try {
+            model = ai.getGenerativeModel({ 
+                model: "gemini-2.0-flash-exp",
+                generationConfig: {
+                    responseMimeType: "application/json",
+                },
+            });
+        } catch {
+            model = ai.getGenerativeModel({ 
+                model: "gemini-1.5-flash",
+                generationConfig: {
+                    responseMimeType: "application/json",
+                },
+            });
+        }
+        
         const response = await model.generateContent(prompt);
         
         let jsonStr = response.response.text()?.trim() || "";
@@ -81,6 +102,12 @@ export const fetchAiAnalysis = async (errors: ErrorDetail[]): Promise<AiAnalysis
 
     } catch (error) {
         console.error("Failed to fetch or parse AI analysis:", error);
+        if (error instanceof Error && error.message.includes("API_KEY")) {
+            return {
+                analysis: "Gemini API key is invalid or not configured. Please check your environment variables.",
+                drill: ["check", "your", "api", "key", "configuration"]
+            };
+        }
         return null;
     }
 };
