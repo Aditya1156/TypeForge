@@ -486,7 +486,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Demo gift codes validation - in production this would be done on backend
     const DEMO_GIFT_CODES: { [key: string]: SubscriptionTier } = {
-      'TYPEFORGE2024': 'premium',
+      'TYPINGPATH2024': 'premium',
       'PREMIUM50OFF': 'premium',
       'BETA-ACCESS-001': 'pro',
       'EARLY-ADOPTER': 'premium',

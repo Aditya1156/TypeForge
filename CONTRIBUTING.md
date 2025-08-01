@@ -1,6 +1,6 @@
-# Contributing to TypeForge 🤝
+# Contributing to TypingPath 🤝
 
-Thank you for your interest in contributing to TypeForge! We welcome contributions from developers of all skill levels.
+Thank you for your interest in contributing to TypingPath! We welcome contributions from developers of all skill levels.
 
 ## 🚀 Getting Started
 
@@ -15,12 +15,12 @@ Thank you for your interest in contributing to TypeForge! We welcome contributio
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/your-username/TypeForge.git
-   cd TypeForge
+   git clone https://github.com/your-username/TypingPath.git
+   cd TypingPath
    ```
 3. **Add the upstream remote**:
    ```bash
-   git remote add upstream https://github.com/Aditya1156/TypeForge.git
+   git remote add upstream https://github.com/Aditya1156/TypingPath.git
    ```
 4. **Install dependencies**:
    ```bash
@@ -241,4 +241,4 @@ Contributors will be:
 - Mentioned in release notes
 - Recognized in the community
 
-Thank you for helping make TypeForge better! 🚀
+Thank you for helping make TypingPath better! 🚀

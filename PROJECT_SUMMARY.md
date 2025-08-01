@@ -1,4 +1,4 @@
-# TypeForge - Quick Project Overview
+# TypingPath - Quick Project Overview
 
 ## 👨‍💻 Developer
 **Aditya Kumar**  
@@ -8,7 +8,7 @@
 ---
 
 ## 🚀 Project Summary
-**TypeForge (TypingPath)** - AI-powered typing practice platform with Gemini 2.0 integration, real-time analytics, and gamified learning experience.
+**TypingPath** - AI-powered typing practice platform with Gemini 2.0 integration, real-time analytics, and gamified learning experience.
 
 ## 🛠️ Tech Stack
 - **Frontend:** React 19 + TypeScript + Vite + TailwindCSS

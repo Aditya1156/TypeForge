@@ -1,8 +1,8 @@
 # Deployment Guide
 
-## TypeForge Deployment Options
+## TypingPath Deployment Options
 
-This guide covers various deployment strategies for TypeForge.
+This guide covers various deployment strategies for TypingPath.
 
 ## 🚀 Quick Deploy Options
 

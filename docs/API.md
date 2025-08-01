@@ -1,8 +1,8 @@
 # API Documentation
 
-## TypeForge API Reference
+## TypingPath API Reference
 
-This document outlines the key APIs and interfaces used in TypeForge.
+This document outlines the key APIs and interfaces used in TypingPath.
 
 ## Core Components
 
